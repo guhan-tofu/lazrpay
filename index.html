@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solana Wallet Connect</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center" style="background-color:#39FF14;">
+  <div class="text-center">
+    <h1 class="text-3xl md:text-4xl font-bold mb-6">Connect your Solana Wallet</h1>
+    <button id="connectButton" class="px-6 py-3 bg-black text-white rounded-lg shadow-lg hover:bg-gray-800 transition disabled:opacity-50">
+      Connect Wallet
+    </button>
+    <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>
+  </div>
+
+  <script type="module">
+    // Basic Phantom (or compatible) wallet connect
+    const provider = window.solana;
+    const connectButton = document.getElementById('connectButton');
+    const walletAddressEl = document.getElementById('walletAddress');
+
+    async function connect() {
+      if (!provider || !provider.isPhantom) {
+        alert('Phantom Wallet not found. Please install the Phantom browser extension and refresh.');
+        return;
+      }
+      try {
+        const { publicKey } = await provider.connect();
+        walletAddressEl.textContent = `Connected: ${publicKey.toString()}`;
+        connectButton.textContent = 'Connected';
+        connectButton.disabled = true;
+      } catch (err) {
+        console.error('Wallet connection failed:', err);
+      }
+    }
+
+    connectButton.addEventListener('click', connect);
+  </script>
+</body>
+</html>
