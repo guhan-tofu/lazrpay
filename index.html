@@ -31,8 +31,7 @@
 +#+        +#++:++#++:    +#+    +#++:++#: 
 +#+        +#+     +#+   +#+     +#+    +#+
 #+#        #+#     #+#  #+#      #+#    #+#
-########## ###     ### ######### ###    ###
-    </pre>
+########## ###     ### ######### ###    ###</pre>
 
     <!-- Input Fields -->
     <div class="mx-auto max-w-xs space-y-4">
@@ -56,76 +55,82 @@
   </div>
 
   <!-- App Logic -->
-  <script type="module">
-    const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
+<script type="module">
+  const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
 
-    const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW";
+  const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW"; // Hardcoded for now
 
-    const sendButton = document.getElementById('sendButton');
-    const walletAddressEl = document.getElementById('walletAddress');
-    const toInput = document.getElementById('to');
-    const amountInput = document.getElementById('amount');
+  const sendButton = document.getElementById('sendButton');
+  const walletAddressEl = document.getElementById('walletAddress');
+  const toInput = document.getElementById('to');
+  const amountInput = document.getElementById('amount');
 
-    function getProvider() {
-      return window?.phantom?.solana || window?.solana || null;
-    }
+  function getProvider() {
+    return window?.phantom?.solana || window?.solana || null;
+  }
 
-    async function connectWallet() {
-      const provider = getProvider();
-      if (!provider) {
-        alert('No Solana wallet found. Install Phantom and try again.');
-        throw new Error('Provider not found');
-      }
-      if (!provider.publicKey) {
-        await provider.connect({ onlyIfTrusted: false });
-      }
-      walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
-      return provider;
-    }
-
-    async function buildAndSend(provider) {
-      if (!toInput.checkValidity() || !amountInput.checkValidity()) {
-        toInput.reportValidity();
-        amountInput.reportValidity();
-        return;
-      }
-      const amountSol = parseFloat(amountInput.value);
-      const lamports = Math.round(amountSol * LAMPORTS_PER_SOL);
-      if (!Number.isFinite(lamports) || lamports <= 0) {
-        alert('Amount must be greater than 0');
-        return;
-      }
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-      const toPubkey = new PublicKey(DESTINATION_ADDRESS);
-      const fromPubkey = provider.publicKey;
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      const transaction = new Transaction({ feePayer: fromPubkey, recentBlockhash: blockhash, lastValidBlockHeight })
-        .add(SystemProgram.transfer({ fromPubkey, toPubkey, lamports }));
-      try {
-        const signed = await provider.signTransaction(transaction);
-        const txid = await connection.sendRawTransaction(signed.serialize());
-        await connection.confirmTransaction({ signature: txid, blockhash, lastValidBlockHeight }, 'confirmed');
-        alert(`Transaction submitted!\nTxID: ${txid}`);
-      } catch (err) {
-        if (err?.code === 4001 || /User rejected/i.test(err?.message)) return;
-        console.error('Transaction failed:', err);
-        alert('Transaction failed: ' + (err?.message || err));
-      }
-    }
-
-    async function handleSend() {
-      try {
-        const provider = await connectWallet();
-        await buildAndSend(provider);
-      } catch (_) {}
-    }
-
+  async function connectWallet() {
     const provider = getProvider();
-    provider?.on?.('connect', () => {
-      walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
-    });
+    if (!provider) {
+      alert('No Solana wallet found.');
+      throw new Error('Provider not found');
+    }
+    if (!provider.publicKey) {
+      await provider.connect();
+    }
+    walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
+    return provider;
+  }
 
-    sendButton.addEventListener('click', handleSend);
-  </script>
+  async function buildAndSend(provider) {
+    if (!amountInput.checkValidity()) {
+      amountInput.reportValidity();
+      return;
+    }
+
+    const connection = new Connection('https://api.devnet.solana.com', 'confirmed'); // devnet only for testing 
+    const amount = parseFloat(amountInput.value);
+    const lamports = Math.round(amount * LAMPORTS_PER_SOL);
+    const toPubkey = new PublicKey(DESTINATION_ADDRESS);
+    const fromPubkey = provider.publicKey;
+
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+    console.log("Creating transaction...");
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports
+      })
+    );
+    transaction.feePayer = fromPubkey;
+    transaction.recentBlockhash = blockhash;
+
+    console.log("Signing transaction...");
+    try {
+      const signed = await provider.signTransaction(transaction);
+      const rawTx = signed.serialize();
+      console.log("Sending transaction...");
+      const txid = await connection.sendRawTransaction(rawTx);
+      console.log("Confirming transaction...");
+      await connection.confirmTransaction({ signature: txid, blockhash, lastValidBlockHeight }, 'confirmed');
+      alert(`Success!\nTransaction ID: ${txid}`);
+    } catch (err) {
+      console.error("Error during transaction:", err);
+      alert("Error: " + (err?.message || err));
+    }
+  }
+
+  sendButton.addEventListener('click', async () => {
+    try {
+      const provider = await connectWallet();
+      await buildAndSend(provider);
+    } catch (e) {
+      console.error("Wallet connect/send failed:", e);
+    }
+  });
+</script>
+
 </body>
 </html>
