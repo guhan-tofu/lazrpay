@@ -20,5 +20,14 @@
 
 ## ToDo
 
+### Frontend
+- Website design
+- To: email, phone, tg
+- Amount: Convert from solana
+- Ref (optional)
 
+### Backend
+- Create link
+- Provide link to copy, send
+- Claim options
 
