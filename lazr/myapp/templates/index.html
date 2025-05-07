@@ -4,10 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LAZR</title>
-  <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- crypto.randomUUID poly‑fill (for older Chromium / Firefox ESR) -->
+  <!-- crypto.randomUUID poly‑fill -->
   <script>
     if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
       crypto.randomUUID = () => (
@@ -18,12 +17,10 @@
     }
   </script>
 
-  <!-- Solana web3.js – browser bundle (IIFE) ships with all deps & avoids `uuid.v4` import issues -->
   <script src="https://unpkg.com/@solana/web3.js@1.98.2/lib/index.iife.min.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center" style="background-color:#39FF14;">
   <div class="text-center space-y-6">
-    <!-- ASCII Art Title -->
     <pre class="font-mono text-black text-sm md:text-base leading-none">
 :::            :::     ::::::::: ::::::::: 
 :+:          :+: :+:        :+:  :+:    :+: 
@@ -33,7 +30,6 @@
 #+#        #+#     #+#  #+#      #+#    #+#
 ########## ###     ### ######### ###    ###</pre>
 
-    <!-- Input Fields -->
     <div class="mx-auto max-w-xs space-y-4">
       <label class="block text-left">
         <span class="block text-xl font-bold">To (email)</span>
@@ -46,18 +42,14 @@
       </label>
     </div>
 
-    <!-- Bright pink button -->
     <button id="sendButton" class="text-3xl px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition disabled:opacity-50">
       SEND IT
     </button>
     <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>
   </div>
 
-  <!-- App Logic -->
 <script type="module">
   const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
-
-  // Hardcoded destination address - Need to change later
   const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW"; 
 
   const sendButton = document.getElementById('sendButton');
@@ -69,6 +61,54 @@
     return window?.phantom?.solana || window?.solana || null;
   }
 
+  async function createSender(publicKey) {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/myapp/sender/create/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet_address: publicKey }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 400 && errorText.includes("already exists")) {
+          console.log("Sender already exists, continuing.");
+          return;
+        }
+        throw new Error(errorText);
+      }
+
+      const result = await response.json();
+      console.log("Sender created:", result);
+    } catch (err) {
+      console.warn("Sender creation skipped or failed:", err.message);
+    }
+  }
+
+  async function createRecipient(email) {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/myapp/recipient/create/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 400 && errorText.includes("already exists")) {
+          console.log("Recipient already exists, continuing.");
+          return;
+        }
+        throw new Error(errorText);
+      }
+
+      const result = await response.json();
+      console.log("Recipient created:", result);
+    } catch (err) {
+      console.warn("Recipient creation skipped or failed:", err.message);
+    }
+  }
+
   async function connectWallet() {
     const provider = getProvider();
     if (!provider) {
@@ -78,7 +118,9 @@
     if (!provider.publicKey) {
       await provider.connect();
     }
-    walletAddressEl.textContent = `Connected: ${provider.publicKey.toString()}`;
+    const publicKey = provider.publicKey.toString();
+    walletAddressEl.textContent = `Connected: ${publicKey}`;
+    await createSender(publicKey);
     return provider;
   }
 
@@ -91,14 +133,14 @@
     const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
     const amount = parseFloat(amountInput.value);
     const lamports = Math.round(amount * LAMPORTS_PER_SOL);
-    
-    // Use the hardcoded DESTINATION_ADDRESS
+
+    const toEmail = toInput.value.trim();
     const toPubkey = new PublicKey(DESTINATION_ADDRESS);
     const fromPubkey = provider.publicKey;
+    const fromAddress = fromPubkey.toString();
 
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
 
-    console.log("Creating transaction...");
     const transaction = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey,
@@ -109,15 +151,35 @@
     transaction.feePayer = fromPubkey;
     transaction.recentBlockhash = blockhash;
 
-    console.log("Signing transaction...");
     try {
       const signed = await provider.signTransaction(transaction);
       const rawTx = signed.serialize();
-      console.log("Sending transaction...");
       const txid = await connection.sendRawTransaction(rawTx);
-      console.log("Confirming transaction...");
       await connection.confirmTransaction({ signature: txid, blockhash, lastValidBlockHeight }, 'confirmed');
       alert(`Success!\nTransaction ID: ${txid}`);
+
+      await createRecipient(toEmail);
+
+      const senderRes = await fetch(`http://127.0.0.1:8000/myapp/sender/by_wallet/${fromAddress}/`);
+      const senderData = await senderRes.json();
+      const senderId = senderData.sender_id;
+      console.log(`Sender ID: ${senderId}`);
+
+      const recipientRes = await fetch(`http://127.0.0.1:8000/myapp/recipient/by_email/${toEmail}/`);
+      const recipientData = await recipientRes.json();
+      const recipientId = recipientData.recipient_id;
+
+      await fetch("http://127.0.0.1:8000/myapp/transaction/create/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from_user: senderId,
+          to_receiver: recipientId,
+          tx_hash: txid
+        }),
+      });
+
+      console.log("Transaction record created successfully.");
     } catch (err) {
       console.error("Error during transaction:", err);
       alert("Error: " + (err?.message || err));
