@@ -63,7 +63,7 @@
 
   async function createSender(publicKey) {
     try {
-      const response = await fetch("http://127.0.0.1:8000/myapp/sender/create/", {
+      const response = await fetch("http://54.90.237.183:8000/myapp/sender/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wallet_address: publicKey }),
@@ -87,7 +87,7 @@
 
   async function createRecipient(email) {
     try {
-      const response = await fetch("http://127.0.0.1:8000/myapp/recipient/create/", {
+      const response = await fetch("http://54.90.237.183:8000/myapp/recipient/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -160,16 +160,16 @@
 
       await createRecipient(toEmail);
 
-      const senderRes = await fetch(`http://127.0.0.1:8000/myapp/sender/by_wallet/${fromAddress}/`);
+      const senderRes = await fetch(`http://54.90.237.183:8000/myapp/sender/by_wallet/${fromAddress}/`);
       const senderData = await senderRes.json();
       const senderId = senderData.sender_id;
       console.log(`Sender ID: ${senderId}`);
 
-      const recipientRes = await fetch(`http://127.0.0.1:8000/myapp/recipient/by_email/${toEmail}/`);
+      const recipientRes = await fetch(`http://54.90.237.183:8000/myapp/recipient/by_email/${toEmail}/`);
       const recipientData = await recipientRes.json();
       const recipientId = recipientData.recipient_id;
 
-      await fetch("http://127.0.0.1:8000/myapp/transaction/create/", {
+      await fetch("http://54.90.237.183:8000/myapp/transaction/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
