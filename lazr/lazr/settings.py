@@ -87,6 +87,8 @@ DATABASES = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None # Disable the default policy for development purposes
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
