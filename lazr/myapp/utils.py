@@ -1,16 +1,16 @@
-from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 import os
+from dotenv import load_dotenv
 
-# Load variables from .env
 load_dotenv()
 
 def send_email(user_email):
     #sender_email = os.getenv("GMAIL_ADDRESS")
-    sender_email = "guhanguhan345@gmail.com"
     #app_password = os.getenv("GMAIL_APP_PASSWORD")
+
+    sender_email = "guhanguhan345@gmail.com"
     app_password = "ouyu kjid mctj owtg"
 
     subject = "Welcome to Our App!"
@@ -20,11 +20,9 @@ def send_email(user_email):
     Thank you for signing up! We're excited to have you on board.
 
     Best,
-    
     LazrPay team
     """
 
-    # Create MIME email
     msg = MIMEMultipart()
     msg["From"] = sender_email
     msg["To"] = user_email
@@ -36,10 +34,7 @@ def send_email(user_email):
             server.login(sender_email, app_password)
             server.send_message(msg)
         print(f"Email sent successfully to {user_email}")
+        return True
     except Exception as e:
         print(f"Failed to send email: {e}")
-
-# Example usage
-if __name__ == "__main__":
-    recipient = input("Enter recipient's email: ")
-    send_email(recipient)
+        return False

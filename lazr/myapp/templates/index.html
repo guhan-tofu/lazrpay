@@ -180,6 +180,11 @@
       });
 
       console.log("Transaction record created successfully.");
+      await fetch("http://127.0.0.1:8000/myapp/email/send/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: toEmail }),
+     });
     } catch (err) {
       console.error("Error during transaction:", err);
       alert("Error: " + (err?.message || err));

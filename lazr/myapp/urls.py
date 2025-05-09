@@ -11,6 +11,7 @@ urlpatterns = [
     path('transactions/', views.TransactionListView.as_view(), name='list-transactions'),
     path("sender/by_wallet/<str:wallet_address>/", views.SenderByWalletView.as_view(), name="get_sender_by_wallet"),
     path("recipient/by_email/<str:email>/", views.RecipientByEmailView.as_view(), name="get_recipient_by_email"),
+    path("email/send/", views.send_welcome_email, name="send_welcome_email"),
 ]
 
 # Compare this snippet from lazr/lazr/urls.py:

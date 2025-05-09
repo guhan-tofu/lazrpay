@@ -3,7 +3,9 @@ from rest_framework import generics
 from .models import Sender
 from .serializers import SenderSerializer
 from rest_framework.permissions import AllowAny
-
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.http import JsonResponse
 from .models import Recipient, Transaction, Sender
 from .serializers import RecipientSerializer, TransactionSerializer, SenderSerializer
 
@@ -11,6 +13,25 @@ from .serializers import RecipientSerializer, TransactionSerializer, SenderSeria
 def my_view(request):
     return render(request, 'index.html')
 
+from django.http import HttpResponse
+from .utils import send_email
+
+@csrf_exempt
+def send_welcome_email(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            if not email:
+                return JsonResponse({"error": "Email required"}, status=400)
+            success = send_email(email)
+            if success:
+                return JsonResponse({"status": "Email sent"})
+            else:
+                return JsonResponse({"error": "Email sending failed"}, status=500)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 
 class CreateSenderView(generics.CreateAPIView):
