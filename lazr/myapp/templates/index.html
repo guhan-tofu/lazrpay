@@ -56,6 +56,7 @@
   const walletAddressEl = document.getElementById('walletAddress');
   const toInput = document.getElementById('to');
   const amountInput = document.getElementById('amount');
+  console.log("Amount input:", parseFloat(amountInput.value));
 
   function getProvider() {
     return window?.phantom?.solana || window?.solana || null;
@@ -133,6 +134,7 @@
     const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
     const amount = parseFloat(amountInput.value);
     const lamports = Math.round(amount * LAMPORTS_PER_SOL);
+    
 
     const toEmail = toInput.value.trim();
     const toPubkey = new PublicKey(DESTINATION_ADDRESS);
@@ -169,13 +171,15 @@
       const recipientData = await recipientRes.json();
       const recipientId = recipientData.recipient_id;
 
+      const amountinSol = parseFloat(amountInput.value);
       await fetch("http://127.0.0.1:8000/myapp/transaction/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           from_user: senderId,
           to_receiver: recipientId,
-          tx_hash: txid
+          tx_hash: txid,
+          amount: amountinSol,
         }),
       });
 

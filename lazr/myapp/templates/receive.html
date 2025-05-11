@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Claim Your SOL</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background-color: #0d0d0d;
+        color: #00ff99;
+    }
+
+    h2 {
+        color: #00ff99;
+    }
+
+    #claim-info {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    #claim-form {
+        background-color: #1a1a1a;
+        border: 1px solid #00ff99;
+        padding: 50px;
+        border-radius: 8px;
+        width: 300px;
+        box-shadow: 0 2px 10px rgba(0, 255, 153, 0.2);
+    }
+
+    label {
+        font-weight: bold;
+        color: #00ff99;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        border: 1px solid #00ff99;
+        background-color: #000;
+        color: #00ff99;
+        border-radius: 4px;
+    }
+
+    button {
+        background-color: #00ff99;
+        color: #000;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    button:hover {
+        background-color: #00cc77;
+    }
+
+    #status {
+        margin-top: 20px;
+        font-weight: bold;
+        color: #00ff99;
+    }
+</style>
+
+<body>
+    <h2>Claim Your SOL</h2>
+    <p id="claim-info">Loading transaction...</p>
+
+    <form id="claim-form" style="display:none;">
+        <label>Enter your wallet address:</label><br>
+        <input type="text" id="wallet" required><br><br>
+        <button type="submit" id="claim-btn">Claim</button>
+    </form>
+
+    <p id="status"></p>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const txHash = urlParams.get('tx_hash');
+        let claimed = false; // local flag
+
+        async function loadTransaction() {
+            const res = await fetch(`http://127.0.0.1:8000/myapp/transaction/by_txid/${txHash}/`);
+            const data = await res.json();
+
+            if (res.ok && data.status === "pending") {
+                document.getElementById("claim-info").innerText = 
+                    `You're claiming ${data.amount} SOL sent to ${data.to_receiver_email}.`;
+                document.getElementById("claim-form").style.display = "block";
+            } else {
+                document.getElementById("claim-info").innerText = 
+                    "Invalid or already claimed transaction.";
+            }
+        }
+
+        document.getElementById('claim-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Prevent re-submission
+            if (claimed) return;
+
+            const wallet = document.getElementById('wallet').value;
+            const res2 = await fetch(`http://127.0.0.1:8000/myapp/transaction/by_txid/${txHash}/`);
+            const data = await res2.json();
+            const amount = data.amount;
+
+            const res = await fetch('http://127.0.0.1:8000/myapp/sol/send/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tx_hash: txHash, recipient: wallet, amount: amount })
+            });
+
+            const result = await res.json();
+            if (res.ok) {
+                await fetch(`http://127.0.0.1:8000/myapp/update/status/${txHash}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'confirmed' })
+                });
+
+                document.getElementById("claim-info").innerText = 
+                    `Transaction successful!`;
+                
+                // Disable claiming again
+                claimed = true;
+                document.getElementById('claim-form').style.display = "none";
+
+            } else {
+                document.getElementById("claim-info").innerText = 
+                    `Error: ${result.error}`;
+            }
+            document.getElementById("status").innerText = 
+                res.ok ? `✅ Success! Tx ID: ${result.txid}` : `❌ Error: ${result.error}`;
+        });
+
+        loadTransaction();
+    </script>
+</body>
+</html>

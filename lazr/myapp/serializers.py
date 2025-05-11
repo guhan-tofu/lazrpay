@@ -1,11 +1,18 @@
 from rest_framework import serializers
 from .models import Sender, Recipient, Transaction
+from django.contrib.auth.models import User
 
+class UserInfoSerializer(serializers.Serializer):
+    username = serializers.CharField(source='user.username')
+    email = serializers.EmailField(source='user.email')
 
 class SenderSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    
     class Meta:
         model = Sender
-        fields = ['sender_id', 'wallet_address']
+        fields = ['sender_id', 'username', 'email', 'wallet_address']
 
 class RecipientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +32,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             'to_receiver',
             'to_receiver_email',
             'tx_hash',
+            'amount',
             'status',
         ]
         read_only_fields = ['tx_id']
