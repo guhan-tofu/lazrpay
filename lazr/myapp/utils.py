@@ -6,18 +6,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def send_email(user_email):
+def send_email(user_email, amount, cur, link):
     #sender_email = os.getenv("GMAIL_ADDRESS")
     #app_password = os.getenv("GMAIL_APP_PASSWORD")
 
     sender_email = "guhanguhan345@gmail.com"
     app_password = "ouyu kjid mctj owtg"
 
-    subject = "Welcome to Our App!"
+    subject = "Receive payment"
     body = f"""
     Hello,
 
-    Thank you for signing up! We're excited to have you on board.
+    You have received a payment of {amount} {cur}, to claim it
+    follow the link below: {link}
 
     Best,
     LazrPay team
