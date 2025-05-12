@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Pending SOL Transactions</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #0d0d0d;
+        color: #00ff99;
+        padding: 40px;
+    }
+
+    h2 {
+        color: #00ff99;
+    }
+
+    .transaction {
+        background-color: #1a1a1a;
+        border: 1px solid #00ff99;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 255, 153, 0.2);
+    }
+
+    .claim-button {
+        background-color: #00ff99;
+        color: #000;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .claim-button:hover {
+        background-color: #00cc77;
+    }
+
+    #status {
+        margin-top: 20px;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+  // Store user data in global variables
+  window.userEmail = "{{ user.email }}";
+  window.userId = "{{ user.id }}";
+</script>
+
+<body>
+    <h2>Welcome! Here are your pending transactions:</h2>
+    <div id="transaction-list">Loading...</div>
+
+    <script>
+        // Assume window.userEmail is set from the Django template
+        const userEmail = window.userEmail;
+        console.log("User email:", userEmail);
+
+        async function loadPendingTransactions() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/transaction/by_email/${userEmail}/`);
+                const transactions = await res.json();
+                const container = document.getElementById("transaction-list");
+                container.innerHTML = ""; // Clear loading text
+
+                const pending = transactions.filter(tx => tx.status === "pending");
+
+                if (pending.length === 0) {
+                    container.innerHTML = "<p>No pending transactions found 🎉</p>";
+                    return;
+                }
+
+                pending.forEach(tx => {
+                    const div = document.createElement("div");
+                    div.className = "transaction";
+                    div.innerHTML = `
+                        <p><strong>Amount:</strong> ${tx.amount} SOL</p>
+                        <p><strong>Transaction Hash:</strong> ${tx.tx_hash}</p>
+                        <button class="claim-button" onclick="window.location.href='/receive/?tx_hash=${tx.tx_hash}'">Claim</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+            } catch (err) {
+                document.getElementById("transaction-list").innerText = "Failed to load transactions.";
+                console.error(err);
+            }
+        }
+
+        loadPendingTransactions();
+    </script>
+</body>
+</html>

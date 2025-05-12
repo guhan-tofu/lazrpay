@@ -7,8 +7,9 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.http import JsonResponse
 from .models import Recipient, Transaction, Sender
-from .serializers import RecipientSerializer, TransactionSerializer, SenderSerializer
+from .serializers import RecipientSerializer, TransactionSerializer, SenderSerializer, SenderIdOnlySerializer
 from django.contrib.auth import logout
+from django.core.exceptions import PermissionDenied
 
 # Create your views here.
 def my_view(request):
@@ -17,8 +18,30 @@ def my_view(request):
 def home(request):
     return render(request, 'home.html')
 
+def real_home(request):
+    return render(request, 'real_home.html')
+
 def my_receive_view(request):
-    return render(request, 'receive.html')
+    if not request.user.is_authenticated:
+        return redirect('home')
+    
+    tx_hash = request.GET.get('tx_hash')
+    if not tx_hash:
+        return render(request, 'receive.html', {'error': 'No transaction specified.'})
+    
+    try:
+        transaction = Transaction.objects.get(tx_hash=tx_hash)
+    except Transaction.DoesNotExist:
+        return render(request, 'receive.html', {'error': 'Transaction not found.'})
+    
+    # Check that the transaction was sent to the logged-in user's email
+    if transaction.to_receiver.email != request.user.email:
+        raise PermissionDenied("You do not have permission to claim this transaction.")
+    
+    return render(request, 'receive.html', {'transaction': transaction})
+
+def my_receive_main_view(request):
+    return render(request, 'receive_main.html')
 
 def logout_view(request):
     logout(request)
@@ -144,6 +167,14 @@ class TransactionListView(generics.ListAPIView):
     permission_classes = [AllowAny]  
 
 
+class TransactionByEmailListView(generics.ListAPIView):
+    serializer_class = TransactionSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        email = self.kwargs['to_receiver_email']
+        return Transaction.objects.filter(to_receiver__email=email, status="pending")
+
 
 # Get Sender by Wallet Address
 class SenderByWalletView(generics.RetrieveAPIView):
@@ -178,3 +209,9 @@ class UpdateWalletAddressView(generics.UpdateAPIView):
     serializer_class = SenderSerializer
     permission_classes = [AllowAny]
     lookup_field = 'sender_id' 
+
+class SenderIdView(generics.RetrieveAPIView):
+    queryset = Sender.objects.all()
+    serializer_class = SenderIdOnlySerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'user'

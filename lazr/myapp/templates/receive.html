@@ -85,7 +85,7 @@
         let claimed = false; // local flag
 
         async function loadTransaction() {
-            const res = await fetch(`http://127.0.0.1:8000/myapp/transaction/by_txid/${txHash}/`);
+            const res = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
             const data = await res.json();
 
             if (res.ok && data.status === "pending") {

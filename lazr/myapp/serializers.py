@@ -14,6 +14,12 @@ class SenderSerializer(serializers.ModelSerializer):
         model = Sender
         fields = ['sender_id', 'username', 'email', 'wallet_address']
 
+
+class SenderIdOnlySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sender
+        fields = ['sender_id']
+
 class RecipientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipient
@@ -21,7 +27,7 @@ class RecipientSerializer(serializers.ModelSerializer):
 
 class TransactionSerializer(serializers.ModelSerializer):
     from_user_id = serializers.IntegerField(source='from_user.id', read_only=True)
-    to_receiver_email = serializers.EmailField(source='to_receiver.email', read_only=True)
+    to_receiver_email = serializers.EmailField(source='to_receiver.email')
 
     class Meta:
         model = Transaction
