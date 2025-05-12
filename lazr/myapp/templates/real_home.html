@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real Home</title>
+</head>
+
+<style> 
+    body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0d0d0d; /* dark background */
+    color: #00ff99; /* neon green text */
+}
+
+nav {
+    background-color: #000;
+    padding: 1em 0;
+    border-bottom: 2px solid #00ff99;
+}
+
+nav ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    margin: 0 20px;
+}
+
+nav ul li a {
+    color: #00ff99;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #33ffbb;
+}
+
+.container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1.2em;
+}
+</style>
+<body>
+    <nav>
+        <ul>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'index' %}">Send Money</a></li>
+                <li><a href="{% url 'receive_main' %}">Receive Money</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'home' %}">Sign Up</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Welcome to Lazr</h1>
+        {% if user.is_authenticated %}
+            <p>Hello, {{ user.email }}!</p>
+        {% else %}
+            <p>Please sign up to send or receive money.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

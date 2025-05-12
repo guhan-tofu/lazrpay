@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +31,9 @@
 #+#        #+#     #+#  #+#      #+#    #+#
 ########## ###     ### ######### ###    ###</pre>
 
-    <div class="mx-auto max-w-xs space-y-4">
+    {% if user.is_authenticated %}
+    <!-- User is authenticated, show normal content -->
+
       <label class="block text-left">
         <span class="block text-xl font-bold">To (email)</span>
         <input id="to" name="to" type="email" required placeholder="example@example.com" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
@@ -40,49 +43,110 @@
         <span class="block text-xl font-bold">Amount (SOL)</span>
         <input id="amount" name="amount" type="number" min="0" step="0.001" required placeholder="0.000" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
       </label>
-    </div>
 
     <button id="sendButton" class="text-3xl px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition disabled:opacity-50">
       SEND IT
     </button>
     <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>
+    
+    <div class="mt-6">
+      <a href="{% url 'logout' %}" class="text-black underline">Logout</a>
+    </div>
+    {% else %}
+    <!-- User is not authenticated, show authentication prompt -->
+    <div class="bg-white p-6 rounded-lg shadow-xl text-black max-w-md">
+      <h2 class="text-2xl font-bold mb-4">Sign In Required</h2>
+      <p class="mb-6">You need to sign in to send LAZR payments.</p>
+      
+      <div class="space-y-4">
+        <a href="{% url 'home' %}" class="block w-full px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition text-center">
+          Sign In
+        </a>
+        
+        <p class="text-sm text-gray-600">
+          Don't have an account? 
+          <a href="{% url 'home' %}" class="text-pink-600 hover:underline">Sign Up</a>
+        </p>
+      </div>
+    </div>
+    {% endif %}
   </div>
 
+{% if user.is_authenticated %}
+<!-- Pass user data to JavaScript -->
+<script>
+  // Store user data in global variables
+  window.userEmail = "{{ user.email }}";
+  window.userId = "{{ user.id }}";
+</script>
 <script type="module">
   const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
   const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW"; 
-
+  // Access user data from window object
+  const userEmail = window.userEmail;
+  const userId = window.userId;
+  // console.log("User ID:", userId);
   const sendButton = document.getElementById('sendButton');
   const walletAddressEl = document.getElementById('walletAddress');
   const toInput = document.getElementById('to');
   const amountInput = document.getElementById('amount');
+  console.log("Amount input:", parseFloat(amountInput.value));
 
   function getProvider() {
     return window?.phantom?.solana || window?.solana || null;
   }
 
-  async function createSender(publicKey) {
+
+      
+  async function getSenderIdByUserId(userId) {
+  try {
+    const userId = window.userId;
+    const response = await fetch(`http://127.0.0.1:8000/senderid/${userId}/`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch sender ID");
+    }
+    const data = await response.json();
+    return data.sender_id;
+  } catch (error) {
+    console.error("Error fetching sender ID:", error);
+    throw error;
+  }
+}
+
+  async function updateSenderWallet(publicKey) {
     try {
-      const response = await fetch("http://127.0.0.1:8000/myapp/sender/create/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // Update the wallet address for the current user
+
+      const senderId = await getSenderIdByUserId(userId);
+      const response = await fetch(`http://127.0.0.1:8000/sender/update-wallet/${senderId}/`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken() // Get CSRF token if needed
+        },
         body: JSON.stringify({ wallet_address: publicKey }),
       });
-
+      
       if (!response.ok) {
         const errorText = await response.text();
-        if (response.status === 400 && errorText.includes("already exists")) {
-          console.log("Sender already exists, continuing.");
-          return;
-        }
-        throw new Error(errorText);
+        throw new Error(`Failed to update wallet: ${errorText}`);
       }
-
+      
       const result = await response.json();
-      console.log("Sender created:", result);
+      console.log("Wallet address updated:", result);
+      return result;
     } catch (err) {
-      console.warn("Sender creation skipped or failed:", err.message);
+      console.error("Wallet update failed:", err.message);
+      throw err; // Re-throw to allow handling by the caller
     }
+  }
+  
+  // Function to get CSRF token from cookies
+  function getCsrfToken() {
+    return document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1] || '';
   }
 
   async function createRecipient(email) {
@@ -120,7 +184,11 @@
     }
     const publicKey = provider.publicKey.toString();
     walletAddressEl.textContent = `Connected: ${publicKey}`;
-    await createSender(publicKey);
+    try {
+      await updateSenderWallet(publicKey);
+    } catch (err) {
+      console.warn("Failed to update wallet address, continuing...");
+    }
     return provider;
   }
 
@@ -133,6 +201,7 @@
     const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
     const amount = parseFloat(amountInput.value);
     const lamports = Math.round(amount * LAMPORTS_PER_SOL);
+    
 
     const toEmail = toInput.value.trim();
     const toPubkey = new PublicKey(DESTINATION_ADDRESS);
@@ -169,13 +238,15 @@
       const recipientData = await recipientRes.json();
       const recipientId = recipientData.recipient_id;
 
+      const amountinSol = parseFloat(amountInput.value);
       await fetch("http://127.0.0.1:8000/myapp/transaction/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           from_user: senderId,
           to_receiver: recipientId,
-          tx_hash: txid
+          tx_hash: txid,
+          amount: amountinSol,
         }),
       });
 
@@ -200,6 +271,7 @@
     }
   });
 </script>
+{% endif %}
 
 </body>
 </html>
