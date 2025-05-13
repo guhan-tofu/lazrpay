@@ -6,18 +6,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def send_email(user_email, amount, cur, link):
-    #sender_email = os.getenv("GMAIL_ADDRESS")
-    #app_password = os.getenv("GMAIL_APP_PASSWORD")
+def send_email(user_email, amount, link):
+    sender_email = os.getenv("GMAIL_ADDRESS")
+    app_password = os.getenv("GMAIL_APP_PASSWORD")
 
-    sender_email = "guhanguhan345@gmail.com"
-    app_password = "ouyu kjid mctj owtg"
+    
 
     subject = "Receive payment"
     body = f"""
     Hello,
 
-    You have received a payment of {amount} {cur}, to claim it
+    You have received a payment of {amount} Sol, to claim it
     follow the link below: {link}
 
     Best,
