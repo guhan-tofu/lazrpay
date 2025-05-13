@@ -80,6 +80,14 @@
     <p id="status"></p>
 
     <script>
+
+        function getCsrfToken() {
+            return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1] || '';
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const txHash = urlParams.get('tx_hash');
         let claimed = false; // local flag
@@ -105,11 +113,11 @@
             if (claimed) return;
 
             const wallet = document.getElementById('wallet').value;
-            const res2 = await fetch(`http://127.0.0.1:8000/myapp/transaction/by_txid/${txHash}/`);
+            const res2 = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
             const data = await res2.json();
             const amount = data.amount;
 
-            const res = await fetch('http://127.0.0.1:8000/myapp/sol/send/', {
+            const res = await fetch('http://127.0.0.1:8000/sol/send/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tx_hash: txHash, recipient: wallet, amount: amount })
@@ -117,10 +125,11 @@
 
             const result = await res.json();
             if (res.ok) {
-                await fetch(`http://127.0.0.1:8000/myapp/update/status/${txHash}/`, {
+                await fetch(`http://127.0.0.1:8000/update/status/${txHash}/`, {
                     method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
                     },
                     body: JSON.stringify({ status: 'confirmed' })
                 });

@@ -10,6 +10,7 @@ from .models import Recipient, Transaction, Sender
 from .serializers import RecipientSerializer, TransactionSerializer, SenderSerializer, SenderIdOnlySerializer
 from django.contrib.auth import logout
 from django.core.exceptions import PermissionDenied
+from django.utils.decorators import method_decorator
 
 # Create your views here.
 def my_view(request):
@@ -145,7 +146,7 @@ class SenderListView(generics.ListAPIView):
     serializer_class = SenderSerializer
     permission_classes = [AllowAny] 
 
-
+#@method_decorator(csrf_exempt, name='dispatch')
 class CreateRecipientView(generics.CreateAPIView):
     queryset = Recipient.objects.all()
     serializer_class = RecipientSerializer
@@ -156,6 +157,7 @@ class RecipientListView(generics.ListAPIView):
     serializer_class = RecipientSerializer
     permission_classes = [AllowAny] 
 
+#@method_decorator(csrf_exempt, name='dispatch')
 class CreateTransactionView(generics.CreateAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
@@ -198,6 +200,7 @@ class TransactionByIdView(generics.RetrieveAPIView):
 
 
 # Update Status of Transaction
+@method_decorator(csrf_exempt, name='dispatch')
 class UpdateTransactionStatusView(generics.UpdateAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
