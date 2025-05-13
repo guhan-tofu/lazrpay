@@ -7,6 +7,7 @@ import os
 # Load variables from .env
 load_dotenv()
 
+
 def send_email(user_email):
     sender_email = os.getenv("GMAIL_ADDRESS")
     app_password = os.getenv("GMAIL_APP_PASSWORD")
