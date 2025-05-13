@@ -81,7 +81,7 @@
 </script>
 <script type="module">
   const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
-  const DESTINATION_ADDRESS = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW"; 
+  const DESTINATION_ADDRESS = "CKRaFmaQ9urziCreg11WuLVjsssAQVqp9yYtHuD2UuBL"; 
   // Access user data from window object
   const userEmail = window.userEmail;
   const userId = window.userId;
@@ -151,9 +151,9 @@
 
   async function createRecipient(email) {
     try {
-      const response = await fetch("http://127.0.0.1:8000/myapp/recipient/create/", {
+      const response = await fetch("http://127.0.0.1:8000/recipient/create/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" , "X-CSRFToken": getCsrfToken() },
         body: JSON.stringify({ email }),
       });
 
@@ -229,19 +229,19 @@
 
       await createRecipient(toEmail);
 
-      const senderRes = await fetch(`http://127.0.0.1:8000/myapp/sender/by_wallet/${fromAddress}/`);
+      const senderRes = await fetch(`http://127.0.0.1:8000/sender/by_wallet/${fromAddress}/`);
       const senderData = await senderRes.json();
       const senderId = senderData.sender_id;
       console.log(`Sender ID: ${senderId}`);
 
-      const recipientRes = await fetch(`http://127.0.0.1:8000/myapp/recipient/by_email/${toEmail}/`);
+      const recipientRes = await fetch(`http://127.0.0.1:8000/recipient/by_email/${toEmail}/`);
       const recipientData = await recipientRes.json();
       const recipientId = recipientData.recipient_id;
 
       const amountinSol = parseFloat(amountInput.value);
-      await fetch("http://127.0.0.1:8000/myapp/transaction/create/", {
+      await fetch("http://127.0.0.1:8000/transaction/create/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" , "X-CSRFToken": getCsrfToken()  },
         body: JSON.stringify({
           from_user: senderId,
           to_receiver: recipientId,
@@ -251,7 +251,7 @@
       });
 
       console.log("Transaction record created successfully.");
-      await fetch("http://127.0.0.1:8000/myapp/email/send/", {
+      await fetch("http://127.0.0.1:8000/email/send/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: toEmail }),
