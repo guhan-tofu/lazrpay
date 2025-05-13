@@ -19,7 +19,7 @@ def send_email(user_email):
     
     # Read the HTML template from file
     try:
-        with open("lazr/myapp/templates/email.html", "r", encoding="utf-8") as f:
+        with open("C:/Users/Chandru/Downloads/lazr/lazr/myapp/templates/email.html", "r", encoding="utf-8") as f:
             html_content = f.read()
     except FileNotFoundError:
         print("email.html not found.")
