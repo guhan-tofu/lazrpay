@@ -1,0 +1,7 @@
+django
+solana==0.28
+solders
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+django-allauth
