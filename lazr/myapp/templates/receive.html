@@ -75,12 +75,13 @@
         <label>Enter your wallet address:</label><br>
         <input type="text" id="wallet" required><br><br>
         <button type="submit" id="claim-btn">Claim</button>
+        <button type="button" id="bank-claim-btn" style="margin-left: 10px;">Claim via Bank</button>
     </form>
 
     <p id="status"></p>
 
     <script>
-
+        // Function to get CSRF token from cookies
         function getCsrfToken() {
             return document.cookie
             .split('; ')
@@ -92,6 +93,7 @@
         const txHash = urlParams.get('tx_hash');
         let claimed = false; // local flag
 
+        // Check if txHash is present and load transaction
         async function loadTransaction() {
             const res = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
             const data = await res.json();
@@ -117,12 +119,14 @@
             const data = await res2.json();
             const amount = data.amount;
 
+            // Send the transaction to the wallet
             const res = await fetch('http://127.0.0.1:8000/sol/send/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tx_hash: txHash, recipient: wallet, amount: amount })
             });
 
+            // Check if the transaction was successful and update the status
             const result = await res.json();
             if (res.ok) {
                 await fetch(`http://127.0.0.1:8000/update/status/${txHash}/`, {

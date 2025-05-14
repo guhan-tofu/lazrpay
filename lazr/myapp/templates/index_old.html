@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,108 +19,65 @@
   </script>
 
   <script src="https://unpkg.com/@solana/web3.js@1.98.2/lib/index.iife.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f2f2f2;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      height: 100%;
-    }
-
-    .form-card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      padding: 40px 30px;
-      width: 100%;
-      max-width: 500px;
-      box-sizing: border-box;
-      margin: 0 auto;
-      margin-top: 10%;
-    }
-
-    .form-card h2 {
-      margin-bottom: 30px;
-      color: #1C1433;
-      font-size: 24px;
-      text-align: center;
-    }
-
-    .form-group {
-      margin-bottom: 28px;
-    }
-
-    label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 10px;
-      color: #555;
-    }
-
-    input[type="email"],
-    input[type="number"] {
-      width: 100%;
-      padding: 12px 12px;
-      margin: 0px 0;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      background: white;
-      color: #1C1433;
-      box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
-      transition: box-shadow 0.3s ease;
-    }
-
-    input:focus {
-      border: 1.5px solid #8F2AAF;
-      outline: none;
-    }
-
-    .send-btn {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(90deg, #8F2AAF, #E8458F);
-      border: none;
-      border-radius: 14px;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
-    }
-
-    .send-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    
-  </style>
 </head>
-<body>
+<body class="min-h-screen flex items-center justify-center" style="background-color:#39FF14;">
+  <div class="text-center space-y-6">
+    <pre class="font-mono text-black text-sm md:text-base leading-none">
+:::            :::     ::::::::: ::::::::: 
+:+:          :+: :+:        :+:  :+:    :+: 
++:+         +:+   +:+      +:+   +:+    +:+
++#+        +#++:++#++:    +#+    +#++:++#: 
++#+        +#+     +#+   +#+     +#+    +#+
+#+#        #+#     #+#  #+#      #+#    #+#
+########## ###     ### ######### ###    ###</pre>
 
-  
+    {% if user.is_authenticated %}
+    <!-- User is authenticated, show normal content -->
 
-  <div class="form-card">
-    <h2>Send SOL</h2>
-    <form>
-      <div class="form-group">
-        <label for="email">To (email)</label>
-        <input type="email" id="email" placeholder="example@example.com" required>
+      <label class="block text-left">
+        <span class="block text-xl font-bold">To (email)</span>
+        <input id="to" name="to" type="email" required placeholder="example@example.com" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
+      </label>
+
+      <label class="block text-left">
+        <span class="block text-xl font-bold">Amount (SOL)</span>
+        <input id="amount" name="amount" type="number" min="0" step="0.001" required placeholder="0.000" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
+      </label>
+
+    <button id="sendButton" class="text-3xl px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition disabled:opacity-50">
+      SEND IT
+    </button>
+    <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>
+    
+    <div class="mt-6">
+      <a href="{% url 'logout' %}" class="text-black underline">Logout</a>
+    </div>
+
+    {% else %}
+
+    <!-- User is not authenticated, show authentication prompt -->
+    <div class="bg-white p-6 rounded-lg shadow-xl text-black max-w-md">
+      <h2 class="text-2xl font-bold mb-4">Sign In Required</h2>
+      <p class="mb-6">You need to sign in to send LAZR payments.</p>
+      
+      <div class="space-y-4">
+        <a href="{% url 'home' %}" class="block w-full px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition text-center">
+          Sign In
+        </a>
+        
+        <p class="text-sm text-gray-600">
+          Don't have an account? 
+          <a href="{% url 'home' %}" class="text-pink-600 hover:underline">Sign Up</a>
+        </p>
       </div>
+    </div>
+    {% endif %}
 
-      <div class="form-group">
-        <label for="amount">Amount (SOL)</label>
-        <input type="number" id="amount" step="0.001" placeholder="0.000" required>
-      </div>
 
-      <button type="submit" class="send-btn" id="sendButton">SEND</button>
-    </form>
   </div>
-  
+
+{% if user.is_authenticated %}
+<!-- Pass user data to JavaScript -->
 <script>
   // Store user data in global variables
   window.userEmail = "{{ user.email }}";
@@ -135,7 +93,7 @@
   // console.log("User ID:", userId);
   const sendButton = document.getElementById('sendButton');
   const walletAddressEl = document.getElementById('walletAddress');
-  const toInput = document.getElementById('email');
+  const toInput = document.getElementById('to');
   const amountInput = document.getElementById('amount');
   console.log("Amount input:", parseFloat(amountInput.value));
 
@@ -160,6 +118,7 @@
   }
 }
 
+  // Function to update the sender's wallet address
   async function updateSenderWallet(publicKey) {
     try {
       // Update the wallet address for the current user
@@ -196,6 +155,7 @@
       ?.split('=')[1] || '';
   }
 
+  // Function to create a recipient
   async function createRecipient(email) {
     try {
       const response = await fetch("http://127.0.0.1:8000/recipient/create/", {
@@ -220,6 +180,7 @@
     }
   }
 
+  // Function to connect to the wallet
   async function connectWallet() {
     const provider = getProvider();
     if (!provider) {
@@ -237,8 +198,9 @@
       console.warn("Failed to update wallet address, continuing...");
     }
     return provider;
-  }
-
+    }
+  
+  // Function to build and send the transaction
   async function buildAndSend(provider) {
     if (!amountInput.checkValidity()) {
       amountInput.reportValidity();
@@ -285,6 +247,7 @@
       const recipientData = await recipientRes.json();
       const recipientId = recipientData.recipient_id;
 
+      // Create transaction record
       const amountinSol = parseFloat(amountInput.value);
       await fetch("http://127.0.0.1:8000/transaction/create/", {
         method: "POST",
@@ -318,6 +281,7 @@
     }
   });
 </script>
+{% endif %}
 
 </body>
 </html>

@@ -59,6 +59,7 @@
         const userEmail = window.userEmail;
         console.log("User email:", userEmail);
 
+        // Function to load pending transactions
         async function loadPendingTransactions() {
             try {
                 const res = await fetch(`http://127.0.0.1:8000/transaction/by_email/${userEmail}/`);
