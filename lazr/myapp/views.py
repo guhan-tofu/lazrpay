@@ -94,7 +94,6 @@ private_key_bytes = b58decode(PRIVATE_KEY_BASE58)
 keypair = Keypair.from_secret_key(private_key_bytes)
 print("Keypair : ", keypair.public_key)
 
-#DESTINATION = "4RjJu4S761irqRYKGydVNf3rfTjQa9mJiTPT8vsUxjJW"  # Receiver wallet
 
 @csrf_exempt
 def send_sol(request):
