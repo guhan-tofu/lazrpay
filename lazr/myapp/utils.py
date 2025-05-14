@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 import os
-
+from django.template.loader import render_to_string
 # Load variables from .env
 load_dotenv()
 
@@ -20,8 +20,7 @@ def send_email(user_email):
     
     # Read the HTML template from file
     try:
-        with open("C:/Users/Chandru/Downloads/lazr/lazr/myapp/templates/email.html", "r", encoding="utf-8") as f:
-            html_content = f.read()
+        html_content = render_to_string("email.html")
     except FileNotFoundError:
         print("email.html not found.")
         return
