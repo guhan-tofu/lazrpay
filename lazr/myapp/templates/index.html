@@ -7,6 +7,112 @@
   <title>LAZR</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  
+  * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+  body {
+    background-color: #f3e8ff !important;
+    font-family: 'Inter', sans-serif;
+  }
+
+  pre {
+    color: #1e0e62 !important;
+  }
+
+  #sendButton {
+    background-color: #d946ef !important;
+    color: white !important;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  #sendButton:hover {
+    background-color: #c026d3 !important;
+    transform: translateY(-1px);
+  }
+
+  input {
+    background-color: #f5f3ff !important;
+    border: 2px solid #2b0a3d !important;
+    border-radius: 8px !important;
+    color: #1e0e62 !important;
+  }
+
+  input:focus {
+    outline: none !important;
+    border-color: #d946ef !important;
+    box-shadow: 0 0 0 3px rgba(216, 70, 239, 0.2) !important;
+  }
+
+  label span {
+    color: #1e0e62 !important;
+    font-weight: 600 !important;
+  }
+
+  a {
+    color: #1e0e62 !important;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .auth-prompt {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  #walletAddress {
+    color: #4c1d95;
+    font-weight: 500;
+  }
+
+  ::placeholder {
+    color: #6b7280 !important;
+    opacity: 1;
+  }
+
+  header {
+      background-color: #2b0a3d;
+      color: white;
+      padding: 20px 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    header nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    header nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo span {
+      font-size: 1.4em;
+      font-weight: 700;
+      margin-left: 10px;
+    }
+</style>
+
   <!-- crypto.randomUUID poly‑fill -->
   <script>
     if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
@@ -21,6 +127,26 @@
   <script src="https://unpkg.com/@solana/web3.js@1.98.2/lib/index.iife.min.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center" style="background-color:#39FF14;">
+
+    {% load socialaccount %}
+  <header class="fixed w-full top-0 left-0 z-50">
+    <div class="logo">
+      <a href="{% url 'home' %}">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/flash-on.png" width="24" alt="icon" />
+      </a>
+      <span>LAZRPAY</span>
+    </div>
+    <nav>
+        {% if user.is_authenticated %}
+            <a href="{% url 'index' %}">Send</a>
+            <a href="{% url 'receive_main' %}">Receive</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        {% else %}
+            <a href="{% provider_login_url 'google' %}">Sign in with Google</a>
+        {% endif %}
+    </nav>
+  </header>
+
   <div class="text-center space-y-6">
     <pre class="font-mono text-black text-sm md:text-base leading-none">
 :::            :::     ::::::::: ::::::::: 
@@ -113,7 +239,6 @@
   }
 }
 
-  // Function to update the sender's wallet address
   async function updateSenderWallet(publicKey) {
     try {
       // Update the wallet address for the current user
@@ -150,7 +275,6 @@
       ?.split('=')[1] || '';
   }
 
-  // Function to create a recipient
   async function createRecipient(email) {
     try {
       const response = await fetch("http://127.0.0.1:8000/recipient/create/", {
@@ -175,7 +299,6 @@
     }
   }
 
-  // Function to connect to the wallet
   async function connectWallet() {
     const provider = getProvider();
     if (!provider) {
@@ -193,9 +316,8 @@
       console.warn("Failed to update wallet address, continuing...");
     }
     return provider;
-    }
-  
-  // Function to build and send the transaction
+  }
+
   async function buildAndSend(provider) {
     if (!amountInput.checkValidity()) {
       amountInput.reportValidity();
@@ -242,7 +364,6 @@
       const recipientData = await recipientRes.json();
       const recipientId = recipientData.recipient_id;
 
-      // Create transaction record
       const amountinSol = parseFloat(amountInput.value);
       await fetch("http://127.0.0.1:8000/transaction/create/", {
         method: "POST",
