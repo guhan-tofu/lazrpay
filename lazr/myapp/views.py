@@ -79,9 +79,13 @@ from solana.system_program import transfer, TransferParams
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
 from base58 import b58decode
-
+from dotenv import load_dotenv
+import os
+load_dotenv()
 # Base58-encoded private key from Phantom Wallet
-PRIVATE_KEY_BASE58 = "3CtQZJ3UGZSdnfkKWN4SH6yAYnNfwfhddFbQkLnrSfLYe22KqZS2MNvLVGqMweXgQBpsnpA8C4US67wWbdp2u9fc"  # Replace with your actual private key
+
+
+PRIVATE_KEY_BASE58 = os.getenv("PRIVATE_KEY_BASE58")  # Replace with your actual private key
 
 # Decode the base64 string to get the raw private key bytes
 private_key_bytes = b58decode(PRIVATE_KEY_BASE58)
