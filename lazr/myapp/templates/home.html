@@ -35,6 +35,11 @@
       text-decoration: none;
       font-weight: 500;
     }
+
+    a {
+      text-decoration: none;
+    }
+
     .logo {
       display: flex;
       align-items: center;
@@ -87,6 +92,10 @@
     .btn-primary {
       background-color: #d946ef;
       color: white;
+
+      a {
+        color: white;
+      }
     }
     .btn-secondary {
       background-color: white;
@@ -150,6 +159,7 @@
       margin-top: 20px;
       cursor: pointer;
     }
+
   </style>
 </head>
 <body>
@@ -176,8 +186,8 @@
       <h1>Send and Receive Crypto Instantly</h1>
       <p>LazrPay lets you transfer cryptocurrency across borders in seconds. No wallet? No problem.</p>
       <div class="hero-buttons">
-        <button class="btn-primary">Send Crypto</button>
-        <button class="btn-secondary">Claim Crypto</button>
+        <button class="btn-primary"><a href="{% url 'index' %}">Send Crypto</a> </button>
+        <button class="btn-secondary"><a href="{% url 'receive_main' %}">Claim Crypto</a></button>
       </div>
     </div>
 
@@ -210,7 +220,7 @@
   </section>
 
   <section class="section">
-    <h2>Why LazPay?</h2>
+    <h2>Why LazrPay?</h2>
     <div class="benefits">
       <div>✨ No wallet required</div>
       <div>⚡ Instant transfers</div>
