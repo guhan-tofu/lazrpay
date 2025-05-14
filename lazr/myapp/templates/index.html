@@ -52,7 +52,9 @@
     <div class="mt-6">
       <a href="{% url 'logout' %}" class="text-black underline">Logout</a>
     </div>
+
     {% else %}
+
     <!-- User is not authenticated, show authentication prompt -->
     <div class="bg-white p-6 rounded-lg shadow-xl text-black max-w-md">
       <h2 class="text-2xl font-bold mb-4">Sign In Required</h2>
@@ -70,6 +72,8 @@
       </div>
     </div>
     {% endif %}
+
+
   </div>
 
 {% if user.is_authenticated %}
@@ -79,9 +83,10 @@
   window.userEmail = "{{ user.email }}";
   window.userId = "{{ user.id }}";
 </script>
+
 <script type="module">
   const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
-  const DESTINATION_ADDRESS = "CKRaFmaQ9urziCreg11WuLVjsssAQVqp9yYtHuD2UuBL"; 
+  const DESTINATION_ADDRESS = os.getenv("DESTINATION ADDRESS")
   // Access user data from window object
   const userEmail = window.userEmail;
   const userId = window.userId;
