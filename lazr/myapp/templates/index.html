@@ -113,6 +113,7 @@
   }
 }
 
+  // Function to update the sender's wallet address
   async function updateSenderWallet(publicKey) {
     try {
       // Update the wallet address for the current user
@@ -149,6 +150,7 @@
       ?.split('=')[1] || '';
   }
 
+  // Function to create a recipient
   async function createRecipient(email) {
     try {
       const response = await fetch("http://127.0.0.1:8000/recipient/create/", {
@@ -173,6 +175,7 @@
     }
   }
 
+  // Function to connect to the wallet
   async function connectWallet() {
     const provider = getProvider();
     if (!provider) {
@@ -190,8 +193,9 @@
       console.warn("Failed to update wallet address, continuing...");
     }
     return provider;
-  }
-
+    }
+  
+  // Function to build and send the transaction
   async function buildAndSend(provider) {
     if (!amountInput.checkValidity()) {
       amountInput.reportValidity();
@@ -238,6 +242,7 @@
       const recipientData = await recipientRes.json();
       const recipientId = recipientData.recipient_id;
 
+      // Create transaction record
       const amountinSol = parseFloat(amountInput.value);
       await fetch("http://127.0.0.1:8000/transaction/create/", {
         method: "POST",
