@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Claim Your SOL</title>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claim Your SOL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claim Your SOL</title>
@@ -71,13 +64,12 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 40px 20px;
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: calc(100vh - 140px); /* Adjust for header and footer height */
         }
         
         h2 {
@@ -95,7 +87,7 @@
             font-weight: 500;
         }
         
-        #claim-form {
+        #claim-form, #bank-form {
             background-color: #f5f3ff;
             border: 1px solid #d946ef;
             padding: 40px;
@@ -103,7 +95,7 @@
             width: 100%;
             max-width: 500px;
             box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1);
-            margin: 0 auto;
+            margin: 0 auto 20px;
         }
         
         label {
@@ -113,7 +105,7 @@
             margin-bottom: 8px;
         }
         
-        input[type="text"] {
+        input[type="text"], input[type="email"] {
             width: 100%;
             padding: 12px;
             margin-bottom: 25px;
@@ -125,7 +117,7 @@
             transition: border-color 0.2s ease;
         }
         
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="email"]:focus {
             border-color: #d946ef;
             outline: none;
             box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.2);
@@ -172,27 +164,69 @@
             margin-top: auto;
         }
         
-        .button-group {
+        .option-buttons {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .switch-button {
+            background-color: transparent;
+            color: #6d28d9;
+            border: 2px solid #6d28d9;
+            padding: 8px 15px;
+            font-weight: 600;
+        }
+        
+        .switch-button.active {
+            background-color: #6d28d9;
+            color: white;
+        }
+        
+        .moonpay-info {
+            background-color: #f9f5ff;
+            border: 1px dashed #a78bfa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .moonpay-logo {
+            height: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        .payment-method img {
+            height: 24px;
+            margin-right: 10px;
         }
         
         @media (max-width: 500px) {
-            #claim-form {
+            #claim-form, #bank-form {
                 padding: 30px 20px;
             }
             
-            .button-group {
+            .option-buttons {
                 flex-direction: column;
+                width: 100%;
             }
             
             button {
                 width: 100%;
-                margin-bottom: 10px;
             }
             
             .container {
-                min-height: calc(100vh - 200px);
                 padding: 20px;
             }
         }
@@ -200,38 +234,55 @@
 </head>
 
 <body>
-      {% load socialaccount %}
-  <header>
-    <div class="logo">
-      <a href="{% url 'home' %}">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/flash-on.png" width="24" alt="icon" />
-      </a>
-      <span>LAZRPAY</span>
+    <header>
+        <div class="logo">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/flash-on.png" width="24" alt="icon" />
+            <span>LAZRPAY</span>
+        </div>
+        <nav>
+            <a href="#">Send</a>
+            <a href="#">Receive</a>
+            <a href="#">Logout</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Claim Your SOL</h2>
+        <p id="claim-info">Loading transaction...</p>
+        
+        <div class="option-buttons" id="claim-options" style="display:none;">
+            <button id="show-wallet-btn" class="switch-button active">Claim to Wallet</button>
+            <button id="show-bank-btn" class="switch-button">Claim to Bank</button>
+        </div>
+
+        <form id="claim-form" style="display:none;">
+            <label>Enter your wallet address:</label><br>
+            <input type="text" id="wallet" required><br>
+            <button type="submit" id="claim-btn">Claim to Wallet</button>
+        </form>
+        
+        <div id="bank-form" style="display:none;">
+            <div class="moonpay-info">
+                <img src="https://www.moonpay.com/assets/logo-full-purple.svg" alt="MoonPay" class="moonpay-logo">
+                <p>You'll be redirected to MoonPay to complete your transaction securely. MoonPay allows you to convert your SOL to fiat currency sent directly to your bank account.</p>
+            </div>
+            
+            <label>Email address:</label>
+            <input type="email" id="user-email" required placeholder="Your email address">
+            
+            <label>Amount (SOL):</label>
+            <input type="text" id="sol-amount" readonly>
+            
+            <label>Estimated value:</label>
+            <p id="fiat-value" style="margin-bottom: 20px; font-weight: 600; color: #6d28d9;"></p>
+            
+            <button type="button" id="proceed-to-moonpay">Continue to MoonPay</button>
+        </div>
+
+        <p id="status"></p>
     </div>
-    <nav>
-        {% if user.is_authenticated %}
-            <a href="{% url 'index' %}">Send</a>
-            <a href="{% url 'receive_main' %}">Receive</a>
-            <a href="{% url 'logout' %}">Logout</a>
-        {% else %}
-            <a href="{% provider_login_url 'google' %}">Sign in with Google</a>
-        {% endif %}
-    </nav>
-  </header>
 
-
-    <h2>Claim Your SOL</h2>
-    <p id="claim-info">Loading transaction...</p>
-
-    
-    <form id="claim-form" style="display:none;">
-        <label>Enter your wallet address:</label><br>
-        <input type="text" id="wallet" required><br><br>
-        <button type="submit" id="claim-btn">Claim</button>
-        <button type="button" id="bank-claim-btn" style="margin-left: 10px;">Claim via Bank</button>
-    </form>
-
-    <p id="status"></p>
+    <script defer src="https://static.moonpay.com/web-sdk/v1/moonpay-web-sdk.min.js"></script>
 
     <script>
         // Function to get CSRF token from cookies
@@ -245,22 +296,58 @@
         const urlParams = new URLSearchParams(window.location.search);
         const txHash = urlParams.get('tx_hash');
         let claimed = false; // local flag
+        let transactionData = null;
+        
+        // Current SOL price in USD (this would ideally come from an API)
+        const solPrice = 87.50; // Example price for May 2025
+        
+        // Show the wallet claim form
+        document.getElementById('show-wallet-btn').addEventListener('click', () => {
+            document.getElementById('show-wallet-btn').classList.add('active');
+            document.getElementById('show-bank-btn').classList.remove('active');
+            document.getElementById('claim-form').style.display = 'block';
+            document.getElementById('bank-form').style.display = 'none';
+        });
+        
+        // Show the bank claim form
+        document.getElementById('show-bank-btn').addEventListener('click', () => {
+            document.getElementById('show-bank-btn').classList.add('active');
+            document.getElementById('show-wallet-btn').classList.remove('active');
+            document.getElementById('claim-form').style.display = 'none';
+            document.getElementById('bank-form').style.display = 'block';
+        });
 
         // Check if txHash is present and load transaction
         async function loadTransaction() {
-            const res = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
-            const data = await res.json();
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
+                const data = await res.json();
+                transactionData = data;
 
-            if (res.ok && data.status === "pending") {
+                if (res.ok && data.status === "pending") {
+                    document.getElementById("claim-info").innerText = 
+                        `You're claiming ${data.amount} SOL sent to ${data.to_receiver_email}.`;
+                    document.getElementById("claim-options").style.display = "flex";
+                    document.getElementById("claim-form").style.display = "block";
+                    
+                    // Set the amount for MoonPay form
+                    document.getElementById("sol-amount").value = data.amount;
+                    
+                    // Calculate estimated value
+                    const fiatValue = (parseFloat(data.amount) * solPrice).toFixed(2);
+                    document.getElementById("fiat-value").innerText = `~$${fiatValue} USD`;
+                } else {
+                    document.getElementById("claim-info").innerText = 
+                        "Invalid or already claimed transaction.";
+                }
+            } catch (error) {
                 document.getElementById("claim-info").innerText = 
-                    `You're claiming ${data.amount} SOL sent to ${data.to_receiver_email}.`;
-                document.getElementById("claim-form").style.display = "block";
-            } else {
-                document.getElementById("claim-info").innerText = 
-                    "Invalid or already claimed transaction.";
+                    "Error loading transaction. Please try again later.";
+                console.error("Error loading transaction:", error);
             }
         }
 
+        // Handle wallet claim submission
         document.getElementById('claim-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -268,44 +355,114 @@
             if (claimed) return;
 
             const wallet = document.getElementById('wallet').value;
-            const res2 = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
-            const data = await res2.json();
-            const amount = data.amount;
+            
+            // Validate wallet address (basic validation)
+            if (!wallet || wallet.length < 32) {
+                document.getElementById("status").innerText = "Please enter a valid Solana wallet address";
+                return;
+            }
+            
+            try {
+                // Double-check transaction status
+                const res2 = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
+                const data = await res2.json();
+                const amount = data.amount;
 
-            // Send the transaction to the wallet
-            const res = await fetch('http://127.0.0.1:8000/sol/send/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tx_hash: txHash, recipient: wallet, amount: amount })
-            });
+                // Send the transaction to the wallet
+                const res = await fetch('http://127.0.0.1:8000/sol/send/', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ tx_hash: txHash, recipient: wallet, amount: amount })
+                });
 
-            // Check if the transaction was successful and update the status
-            const result = await res.json();
-            if (res.ok) {
+                // Check if the transaction was successful and update the status
+                const result = await res.json();
+                if (res.ok) {
+                    await fetch(`http://127.0.0.1:8000/update/status/${txHash}/`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        body: JSON.stringify({ status: 'confirmed' })
+                    });
+
+                    document.getElementById("claim-info").innerText = 
+                        `Transaction successful!`;
+                    
+                    // Disable claiming again
+                    claimed = true;
+                    document.getElementById('claim-options').style.display = "none";
+                    document.getElementById('claim-form').style.display = "none";
+                    document.getElementById('bank-form').style.display = "none";
+
+                } else {
+                    document.getElementById("claim-info").innerText = 
+                        `Error: ${result.error}`;
+                }
+                document.getElementById("status").innerText = 
+                    res.ok ? `✅ Success! Tx ID: ${result.txid}` : `❌ Error: ${result.error}`;
+            } catch (error) {
+                document.getElementById("status").innerText = 
+                    `❌ Error processing your transaction. Please try again.`;
+                console.error("Error processing transaction:", error);
+            }
+        });
+
+        // Handle MoonPay integration
+        document.getElementById('proceed-to-moonpay').addEventListener('click', async () => {
+            if (claimed) return;
+            
+            const email = document.getElementById('user-email').value;
+            if (!email || !email.includes('@')) {
+                document.getElementById("status").innerText = "Please enter a valid email address";
+                return;
+            }
+            
+            try {
+                // First, mark the transaction as being processed via MoonPay
                 await fetch(`http://127.0.0.1:8000/update/status/${txHash}/`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCsrfToken()
                     },
-                    body: JSON.stringify({ status: 'confirmed' })
+                    body: JSON.stringify({ 
+                        status: 'pending', // Need to change to claimed thru bank
+                        moonpay_email: email
+                    })
                 });
-
-                document.getElementById("claim-info").innerText = 
-                    `Transaction successful!`;
                 
-                // Disable claiming again
-                claimed = true;
-                document.getElementById('claim-form').style.display = "none";
+                
+                // Calculate the fiat amount
+                const solAmount = parseFloat(transactionData.amount);
+                const usdAmount = solAmount * solPrice;
 
-            } else {
-                document.getElementById("claim-info").innerText = 
-                    `Error: ${result.error}`;
+                console.log(usdAmount)
+                
+                const moonpayUrl = new URL('https://sell-sandbox.moonpay.com/?apiKey=pk_test_XZNLjHZouI3mtm8ykNMjVD0JL9kZ3u');
+               // moonpayUrl.searchParams.append('apiKey', 'pk_test_XZNLjHZouI3mtm8ykNMjVD0JL9kZ3u');
+                moonpayUrl.searchParams.append('quoteCurrencyCode', 'usd');
+                moonpayUrl.searchParams.append('baseCurrencyCode', 'sol');
+                moonpayUrl.searchParams.append('defaultBaseCurrencyCode', 'sol');
+                moonpayUrl.searchParams.append('baseCurrencyAmount', solAmount.toFixed(2));
+                moonpayUrl.searchParams.append('email', email);
+                moonpayUrl.searchParams.append('refId', txHash);
+                
+                // Redirect to MoonPay
+                window.location.href = moonpayUrl.toString();
+            
+            } catch (error) {
+                document.getElementById("status").innerText = 
+                    `❌ Error connecting to MoonPay. Please try again.`;
+                console.error("Error connecting to MoonPay:", error);
             }
-            document.getElementById("status").innerText = 
-                res.ok ? `✅ Success! Tx ID: ${result.txid}` : `❌ Error: ${result.error}`;
         });
 
+        // Load transaction data when the page loads
         loadTransaction();
     </script>
 </body>

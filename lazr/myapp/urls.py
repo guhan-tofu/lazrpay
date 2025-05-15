@@ -23,6 +23,7 @@ urlpatterns = [
     path("email/send/", views.send_welcome_email, name="send_welcome_email"),
     path("sol/send/", views.send_sol, name="send_sol"),
     path("logout", views.logout_view, name="logout"),
+    path('api/moonpay-key/', views.get_moonpay_key),
 
 ]
 
