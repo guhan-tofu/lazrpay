@@ -35,6 +35,12 @@
       text-decoration: none;
       font-weight: 500;
     }
+
+
+    a {
+      text-decoration: none;
+    }
+
     .logo {
       display: flex;
       align-items: center;
@@ -44,21 +50,24 @@
       font-weight: 700;
       margin-left: 10px;
     }
+
+
     .hero {
       padding: 60px 5vw;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
+      gap: 40px;
     }
     @media(min-width: 1000px) {
       .hero {
         flex-direction: row;
         text-align: left;
         justify-content: space-between;
-        max-width: 80%;
+        max-width: 75%;
         margin: auto;
-        gap: 20px;
+        gap: 0px;
       }
 
       
@@ -87,6 +96,10 @@
     .btn-primary {
       background-color: #d946ef;
       color: white;
+
+      a {
+        color: white;
+      }
     }
     .btn-secondary {
       background-color: white;
@@ -150,6 +163,7 @@
       margin-top: 20px;
       cursor: pointer;
     }
+
   </style>
 </head>
 <body>
@@ -178,8 +192,8 @@
       <h1>Send and Receive Crypto Instantly</h1>
       <p>LazrPay lets you transfer cryptocurrency across borders in seconds. No wallet? No problem.</p>
       <div class="hero-buttons">
-        <button class="btn-primary">Send Crypto</button>
-        <button class="btn-secondary">Claim Crypto</button>
+        <button class="btn-primary"><a href="{% url 'index' %}">Send Crypto</a> </button>
+        <button class="btn-secondary"><a href="{% url 'receive_main' %}">Claim Crypto</a></button>
       </div>
     </div>
 
@@ -196,23 +210,23 @@
       <div class="card">
         <img src="https://img.icons8.com/ios-filled/50/000000/send-mass-email.png"/>
         <h3>Send</h3>
-        <p>Choose a crypto and enter the recipient's mail or wallet.</p>
+        <p>Sender chooses a crypto and enters the recipient's email</p>
       </div>
       <div class="card">
         <img src="https://img.icons8.com/ios-filled/50/000000/new-post.png"/>
-        <h3>Notify</h3>
-        <p>They get notified with a claim link.</p>
+        <h3>Verify</h3>
+        <p>The recepient receives an email and verifies</p>
       </div>
       <div class="card">
         <img src="https://img.icons8.com/ios-filled/50/000000/receive-cash.png"/>
-        <h3>Receive</h3>
-        <p>Funds arrive in their wallet or new LazrPay account.</p>
+        <h3>Claim</h3>
+        <p>Recipients claims the payment into their bank</p>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <h2>Why LazPay?</h2>
+    <h2>Why LazrPay?</h2>
     <div class="benefits">
       <div>✨ No wallet required</div>
       <div>⚡ Instant transfers</div>
