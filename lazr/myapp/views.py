@@ -12,6 +12,9 @@ from django.contrib.auth import logout
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Create your views here.
 def my_view(request):
     return render(request, 'index.html')
@@ -21,6 +24,9 @@ def home(request):
 
 def real_home(request):
     return render(request, 'real_home.html')
+
+def get_moonpay_key(request):
+    return JsonResponse({'apiKey': os.environ.get('MOONPAY_API_KEY')})
 
 def my_receive_view(request):
     if not request.user.is_authenticated:
@@ -81,7 +87,7 @@ from solana.keypair import Keypair
 from base58 import b58decode
 from dotenv import load_dotenv
 import os
-load_dotenv()
+
 # Base58-encoded private key from Phantom Wallet
 
 

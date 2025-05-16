@@ -1,48 +1,191 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Pending SOL Transactions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: #f3e8ff;
+            color: #1e0e62;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: #2b0a3d;
+            color: white;
+            padding: 20px 5vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        header nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        header nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        
+        header nav a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #2b0a3d;
+            text-align: center;
+        }
+        
+        .transaction {
+            background-color: #f5f3ff;
+            border: 1px solid #d946ef;
+            padding: 25px;
+            margin-bottom: 25px;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 700px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .transaction:hover {
+            transform: translateY(-5px);
+        }
+        
+        .transaction p {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .transaction .tx-hash {
+            font-size: 0.85em;
+            word-break: break-all;
+            color: #6b7280;
+            font-family: monospace;
+            background-color: #f0eeff;
+            padding: 8px;
+            border-radius: 6px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        .transaction .amount {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2b0a3d;
+        }
+        
+        .claim-button {
+            background-color: #d946ef;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 15px;
+            display: block;
+        }
+        
+        .claim-button:hover {
+            background-color: #c026d3;
+        }
+        
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            color: #2b0a3d;
+        }
+        
+        .no-transactions {
+            text-align: center;
+            font-size: 1.1em;
+            background-color: #f5f3ff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 1.1em;
+            color: #6d28d9;
+            margin: 40px 0;
+        }
+        
+        footer {
+            background: #6d28d9;
+            color: white;
+            text-align: center;
+            padding: 20px 5vw;
+            margin-top: auto;
+        }
+
+        header {
+      background-color: #2b0a3d;
+      color: white;
+      padding: 20px 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    header nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    header nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo span {
+      font-size: 1.4em;
+      font-weight: 700;
+      margin-left: 10px;
+    }
+    </style>
 </head>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #0d0d0d;
-        color: #00ff99;
-        padding: 40px;
-    }
-
-    h2 {
-        color: #00ff99;
-    }
-
-    .transaction {
-        background-color: #1a1a1a;
-        border: 1px solid #00ff99;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 255, 153, 0.2);
-    }
-
-    .claim-button {
-        background-color: #00ff99;
-        color: #000;
-        padding: 8px 14px;
-        border: none;
-        border-radius: 4px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .claim-button:hover {
-        background-color: #00cc77;
-    }
-
-    #status {
-        margin-top: 20px;
-        font-weight: bold;
-    }
-</style>
 
 <script>
   // Store user data in global variables
@@ -51,6 +194,27 @@
 </script>
 
 <body>
+
+     {% load socialaccount %}
+  <header>
+    <div class="logo">
+      <a href="{% url 'home' %}">
+      <img src="https://img.icons8.com/ios-filled/50/ffffff/flash-on.png" width="24" alt="icon" />
+      </a>
+      <span>LAZRPAY</span>
+    </div>
+    <nav>
+        {% if user.is_authenticated %}
+            <a href="{% url 'index' %}">Send</a>
+            <a href="{% url 'receive_main' %}">Receive</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        {% else %}
+            <a href="{% provider_login_url 'google' %}">Sign in with Google</a>
+        {% endif %}
+    </nav>
+  </header>
+
+
     <h2>Welcome! Here are your pending transactions:</h2>
     <div id="transaction-list">Loading...</div>
 
@@ -78,8 +242,8 @@
                     const div = document.createElement("div");
                     div.className = "transaction";
                     div.innerHTML = `
-                        <p><strong>Amount:</strong> ${tx.amount} SOL</p>
-                        <p><strong>Transaction Hash:</strong> ${tx.tx_hash}</p>
+                        <p><strong>Amount:</strong> ${parseFloat(tx.amount).toFixed(4)} SOL</p>
+                        <p style="font-size: 0.70em;"><strong>Transaction Hash:</strong> ${tx.tx_hash}</p>
                         <button class="claim-button" onclick="window.location.href='/receive/?tx_hash=${tx.tx_hash}'">Claim</button>
                     `;
                     container.appendChild(div);
