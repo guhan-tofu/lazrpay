@@ -11,6 +11,7 @@ load_dotenv()
 def send_email(user_email):
     sender_email = os.getenv("GMAIL_ADDRESS")
     app_password = os.getenv("GMAIL_APP_PASSWORD")
+    domain = "http://127.0.0.1:8000/"
 
     if not sender_email or not app_password:
         print("Missing GMAIL_ADDRESS or GMAIL_APP_PASSWORD environment variables.")
@@ -20,7 +21,7 @@ def send_email(user_email):
     
     # Read the HTML template from file
     try:
-        html_content = render_to_string("email.html")
+        html_content = render_to_string("email.html", {"domain": domain})
     except FileNotFoundError:
         print("email.html not found.")
         return
