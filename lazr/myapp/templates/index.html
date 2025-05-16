@@ -177,7 +177,7 @@
 
       <button type="submit" class="send-btn" id="sendButton">SEND</button>
     
-    <!-- <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p> -->
+      <!-- <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>  -->
   </div>
 
   {% else %}
@@ -300,7 +300,7 @@
       await provider.connect();
     }
     const publicKey = provider.publicKey.toString();
-    walletAddressEl.textContent = `Connected: ${publicKey}`;
+    // walletAddressEl.textContent = `Connected: ${publicKey}`;
     try {
       await updateSenderWallet(publicKey);
     } catch (err) {
