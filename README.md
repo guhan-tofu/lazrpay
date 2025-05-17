@@ -32,7 +32,15 @@ Simple, elegant bridge between the crypto world and day-to-day workers
 
 - Crypto should be as simple as sending an email
 - Broader onboarding layer, social logins, cross-chain support, wallet creation
-- Open the door to crypto for every day users 
+- Open the door to crypto for every day users
+
+
+## How to Run 
+
+- Load Repo
+- cd lazr
+- `pip install -r requirements.txt`
+- `python manage.py runserver`
 
 
 
