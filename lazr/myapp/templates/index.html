@@ -1,402 +1,427 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LAZR</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Crypto - LAZRPAY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lazr-purple': '#2b0a3d',
+                        'lazr-pink': '#d946ef',
+                        'lazr-light-purple': '#f3e8ff',
+                        'lazr-dark-purple': '#1e0e62',
+                        'lazr-accent': '#6d28d9'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(109, 40, 217, 0.1), 0 10px 10px -5px rgba(109, 40, 217, 0.04);
+        }
+        .button-gradient {
+            background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+        }
+        .button-gradient:hover {
+            background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.1);
+        }
+    </style>
 
-  <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-  
-  * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-    }
-  body {
-    background-color: #f3e8ff !important;
-    font-family: 'Inter', sans-serif;
-  }
+    <!-- crypto.randomUUID poly‑fill -->
+    <script>
+        if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
+            crypto.randomUUID = () => (
+                [1e7] + -1e3 + -4e3 + -8e3 + -1e11
+            ).replace(/[018]/g, c => (
+                c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> (c / 4)
+            ).toString(16));
+        }
+    </script>
 
-  pre {
-    color: #1e0e62 !important;
-  }
-
-  #sendButton {
-    background-color: #d946ef !important;
-    color: white !important;
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-weight: 600;
-    transition: all 0.2s;
-  }
-
-  #sendButton:hover {
-    background-color: #c026d3 !important;
-    transform: translateY(-1px);
-  }
-
-  input {
-    background-color: #f5f3ff !important;
-    border: 2px solid #2b0a3d !important;
-    border-radius: 8px !important;
-    color: #1e0e62 !important;
-  }
-
-  input:focus {
-    outline: none !important;
-    border-color: #d946ef !important;
-    box-shadow: 0 0 0 3px rgba(216, 70, 239, 0.2) !important;
-  }
-
-  label span {
-    color: #1e0e62 !important;
-    font-weight: 600 !important;
-  }
-
-  a {
-    color: #1e0e62 !important;
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  .auth-prompt {
-    background-color: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  #walletAddress {
-    color: #4c1d95;
-    font-weight: 500;
-  }
-
-  ::placeholder {
-    color: #6b7280 !important;
-    opacity: 1;
-  }
-
-  header {
-      background-color: #2b0a3d;
-      color: white;
-      padding: 20px 5vw;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    header nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    header nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-    .logo span {
-      font-size: 1.4em;
-      font-weight: 700;
-      margin-left: 10px;
-    }
-</style>
-
-  <!-- crypto.randomUUID poly‑fill -->
-  <script>
-    if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
-      crypto.randomUUID = () => (
-        [1e7] + -1e3 + -4e3 + -8e3 + -1e11
-      ).replace(/[018]/g, c => (
-        c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> (c / 4)
-      ).toString(16));
-    }
-  </script>
-
-  <script src="https://unpkg.com/@solana/web3.js@1.98.2/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.98.2/lib/index.iife.min.js"></script>
 </head>
-<body class="min-h-screen flex items-center justify-center" style="background-color:#39FF14;">
 
+<body class="font-inter gradient-bg min-h-screen">
     {% load socialaccount %}
-  <header class="fixed w-full top-0 left-0 z-50">
-    <div class="logo">
-      <a href="{% url 'home' %}">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/flash-on.png" width="24" alt="icon" />
-      </a>
-      <span>LAZRPAY</span>
-    </div>
-    <nav>
-        {% if user.is_authenticated %}
-            <a href="{% url 'index' %}">Send</a>
-            <a href="{% url 'receive_main' %}">Receive</a>
-            <a href="{% url 'logout' %}">Logout</a>
-        {% else %}
-            <a href="{% provider_login_url 'google' %}">Sign in with Google</a>
-        {% endif %}
-    </nav>
-  </header>
+    
+    <!-- Header -->
+    <header class="bg-lazr-purple text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                            <img src="https://img.icons8.com/ios-filled/50/2b0a3d/flash-on.png" width="20" alt="LAZRPAY" />
+                        </div>
+                        <span class="text-xl font-bold">LAZRPAY</span>
+                    </a>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-6">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'index' %}" class="text-lazr-pink font-medium">Send</a>
+                        <a href="{% url 'receive_main' %}" class="text-white hover:text-lazr-pink transition-colors font-medium">Receive</a>
+                        <a href="{% url 'logout' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Logout</a>
+                    {% else %}
+                        <a href="{% provider_login_url 'google' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Sign in with Google</a>
+                    {% endif %}
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button class="text-white hover:text-lazr-pink transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
 
-  <div class="text-center space-y-6">
-    <pre class="font-mono text-black text-sm md:text-base leading-none">
-:::            :::     ::::::::: ::::::::: 
-:+:          :+: :+:        :+:  :+:    :+: 
-+:+         +:+   +:+      +:+   +:+    +:+
-+#+        +#++:++#++:    +#+    +#++:++#: 
-+#+        +#+     +#+   +#+     +#+    +#+
-#+#        #+#     #+#  #+#      #+#    #+#
-########## ###     ### ######### ###    ###</pre>
+    <!-- Main Content -->
+    <main class="flex-1 py-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            {% if user.is_authenticated %}
+            <!-- User is authenticated, show normal content -->
+            
+            <!-- Page Header -->
+            <div class="text-center mb-12">
+                <div class="w-16 h-16 bg-lazr-pink rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </div>
+                <h1 class="text-4xl font-bold text-lazr-purple mb-4">Send Crypto</h1>
+                <p class="text-xl text-gray-600">Transfer cryptocurrency to anyone, anywhere in the world</p>
+            </div>
+
+            <!-- Send Form -->
+            <div class="bg-white rounded-3xl card-shadow p-8 mb-8">
+                <form id="send-form" class="space-y-6">
+                    <!-- Recipient Input -->
+                    <div>
+                        <label for="to" class="block text-sm font-semibold text-lazr-purple mb-3">To (email)</label>
+                        <input 
+                            type="email" 
+                            id="to" 
+                            name="to" 
+                            required 
+                            placeholder="example@example.com" 
+                            class="w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-lazr-pink focus:border-transparent input-focus transition-all duration-200"
+                        >
+                    </div>
+
+                    <!-- Amount Input -->
+                    <div>
+                        <label for="amount" class="block text-sm font-semibold text-lazr-purple mb-3">Amount (SOL)</label>
+                        <div class="relative">
+                            <input 
+                                type="number" 
+                                id="amount" 
+                                name="amount" 
+                                min="0" 
+                                step="0.001" 
+                                required 
+                                placeholder="0.000"
+                                class="w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-lazr-pink focus:border-transparent input-focus transition-all duration-200 text-lg font-medium"
+                            >
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+                                SOL
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Send Button -->
+                    <button 
+                        type="submit" 
+                        id="sendButton"
+                        class="w-full button-gradient text-white py-4 px-8 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center justify-center"
+                    >
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        Send Transaction
+                    </button>
+                </form>
+            </div>
+
+            <!-- Wallet Address Display -->
+            <div class="bg-white rounded-3xl card-shadow p-6 mb-8">
+                <h3 class="text-lg font-semibold text-lazr-purple mb-3">Your Wallet Address</h3>
+                <p id="walletAddress" class="text-sm text-gray-600 font-mono break-all bg-gray-50 p-3 rounded-lg"></p>
+            </div>
+
+            <!-- Transaction Status -->
+            <div id="status" class="text-center"></div>
+
+            {% else %}
+            <!-- User is not authenticated, show authentication prompt -->
+            <div class="flex items-center justify-center min-h-[60vh]">
+                <div class="bg-white rounded-3xl card-shadow p-8 max-w-md w-full text-center">
+                    <div class="w-16 h-16 bg-lazr-light-purple rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-lazr-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-lazr-purple mb-4">Sign In Required</h2>
+                    <p class="text-gray-600 mb-6">You need to sign in to send LAZR payments.</p>
+                    
+                    <div class="space-y-4">
+                        <a href="{% url 'home' %}" class="button-gradient text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center w-full">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Sign in with Google
+                        </a>
+                        
+                        <p class="text-sm text-gray-600">
+                            Don't have an account? 
+                            <a href="{% url 'home' %}" class="text-lazr-pink hover:underline">Sign Up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-lazr-accent text-white py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">&copy; 2025 LAZRPAY. Secure crypto transactions made simple.</p>
+        </div>
+    </footer>
 
     {% if user.is_authenticated %}
-    <!-- User is authenticated, show normal content -->
+    <!-- Pass user data to JavaScript -->
+    <script>
+        // Store user data in global variables
+        window.userEmail = "{{ user.email }}";
+        window.userId = "{{ user.id }}";
+    </script>
+    <script type="module">
+        const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
+        const DESTINATION_ADDRESS = "CKRaFmaQ9urziCreg11WuLVjsssAQVqp9yYtHuD2UuBL"; 
+        // Access user data from window object
+        const userEmail = window.userEmail;
+        const userId = window.userId;
+        // console.log("User ID:", userId);
+        const sendButton = document.getElementById('sendButton');
+        const walletAddressEl = document.getElementById('walletAddress');
+        const toInput = document.getElementById('to');
+        const amountInput = document.getElementById('amount');
+        console.log("Amount input:", parseFloat(amountInput.value));
 
-      <label class="block text-left">
-        <span class="block text-xl font-bold">To (email)</span>
-        <input id="to" name="to" type="email" required placeholder="example@example.com" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
-      </label>
-
-      <label class="block text-left">
-        <span class="block text-xl font-bold">Amount (SOL)</span>
-        <input id="amount" name="amount" type="number" min="0" step="0.001" required placeholder="0.000" class="mt-1 w-full px-3 py-2 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black" />
-      </label>
-
-    <button id="sendButton" class="text-3xl px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition disabled:opacity-50">
-      SEND IT
-    </button>
-    <p id="walletAddress" class="mt-4 text-lg font-mono break-all"></p>
-    
-    <div class="mt-6">
-      <a href="{% url 'logout' %}" class="text-black underline">Logout</a>
-    </div>
-    {% else %}
-    <!-- User is not authenticated, show authentication prompt -->
-    <div class="bg-white p-6 rounded-lg shadow-xl text-black max-w-md">
-      <h2 class="text-2xl font-bold mb-4">Sign In Required</h2>
-      <p class="mb-6">You need to sign in to send LAZR payments.</p>
-      
-      <div class="space-y-4">
-        <a href="{% url 'home' %}" class="block w-full px-6 py-3 bg-pink-600 text-white rounded-lg shadow-lg hover:bg-pink-800 transition text-center">
-          Sign In
-        </a>
-        
-        <p class="text-sm text-gray-600">
-          Don't have an account? 
-          <a href="{% url 'home' %}" class="text-pink-600 hover:underline">Sign Up</a>
-        </p>
-      </div>
-    </div>
-    {% endif %}
-  </div>
-
-{% if user.is_authenticated %}
-<!-- Pass user data to JavaScript -->
-<script>
-  // Store user data in global variables
-  window.userEmail = "{{ user.email }}";
-  window.userId = "{{ user.id }}";
-</script>
-<script type="module">
-  const { Connection, PublicKey, SystemProgram, Transaction, LAMPORTS_PER_SOL } = solanaWeb3;
-  const DESTINATION_ADDRESS = "CKRaFmaQ9urziCreg11WuLVjsssAQVqp9yYtHuD2UuBL"; 
-  // Access user data from window object
-  const userEmail = window.userEmail;
-  const userId = window.userId;
-  // console.log("User ID:", userId);
-  const sendButton = document.getElementById('sendButton');
-  const walletAddressEl = document.getElementById('walletAddress');
-  const toInput = document.getElementById('to');
-  const amountInput = document.getElementById('amount');
-  console.log("Amount input:", parseFloat(amountInput.value));
-
-  function getProvider() {
-    return window?.phantom?.solana || window?.solana || null;
-  }
-
-
-      
-  async function getSenderIdByUserId(userId) {
-  try {
-    const userId = window.userId;
-    const response = await fetch(`http://127.0.0.1:8000/senderid/${userId}/`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch sender ID");
-    }
-    const data = await response.json();
-    return data.sender_id;
-  } catch (error) {
-    console.error("Error fetching sender ID:", error);
-    throw error;
-  }
-}
-
-  async function updateSenderWallet(publicKey) {
-    try {
-      // Update the wallet address for the current user
-
-      const senderId = await getSenderIdByUserId(userId);
-      const response = await fetch(`http://127.0.0.1:8000/sender/update-wallet/${senderId}/`, {
-        method: "PUT",
-        headers: { 
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCsrfToken() // Get CSRF token if needed
-        },
-        body: JSON.stringify({ wallet_address: publicKey }),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to update wallet: ${errorText}`);
-      }
-      
-      const result = await response.json();
-      console.log("Wallet address updated:", result);
-      return result;
-    } catch (err) {
-      console.error("Wallet update failed:", err.message);
-      throw err; // Re-throw to allow handling by the caller
-    }
-  }
-  
-  // Function to get CSRF token from cookies
-  function getCsrfToken() {
-    return document.cookie
-      .split('; ')
-      .find(row => row.startsWith('csrftoken='))
-      ?.split('=')[1] || '';
-  }
-
-  async function createRecipient(email) {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/recipient/create/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" , "X-CSRFToken": getCsrfToken() },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        if (response.status === 400 && errorText.includes("already exists")) {
-          console.log("Recipient already exists, continuing.");
-          return;
+        function getProvider() {
+            return window?.phantom?.solana || window?.solana || null;
         }
-        throw new Error(errorText);
-      }
 
-      const result = await response.json();
-      console.log("Recipient created:", result);
-    } catch (err) {
-      console.warn("Recipient creation skipped or failed:", err.message);
-    }
-  }
+        async function getSenderIdByUserId(userId) {
+            try {
+                const userId = window.userId;
+                const response = await fetch(`http://127.0.0.1:8000/senderid/${userId}/`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch sender ID");
+                }
+                const data = await response.json();
+                return data.sender_id;
+            } catch (error) {
+                console.error("Error fetching sender ID:", error);
+                throw error;
+            }
+        }
 
-  async function connectWallet() {
-    const provider = getProvider();
-    if (!provider) {
-      alert('No Solana wallet found.');
-      throw new Error('Provider not found');
-    }
-    if (!provider.publicKey) {
-      await provider.connect();
-    }
-    const publicKey = provider.publicKey.toString();
-    walletAddressEl.textContent = `Connected: ${publicKey}`;
-    try {
-      await updateSenderWallet(publicKey);
-    } catch (err) {
-      console.warn("Failed to update wallet address, continuing...");
-    }
-    return provider;
-  }
+        async function createRecipient(email) {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/recipient/create/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" , "X-CSRFToken": getCsrfToken() },
+                    body: JSON.stringify({ email }),
+                });
 
-  async function buildAndSend(provider) {
-    if (!amountInput.checkValidity()) {
-      amountInput.reportValidity();
-      return;
-    }
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    if (response.status === 400 && errorText.includes("already exists")) {
+                        console.log("Recipient already exists, continuing.");
+                        return;
+                    }
+                    throw new Error(errorText);
+                }
 
-    const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-    const amount = parseFloat(amountInput.value);
-    const lamports = Math.round(amount * LAMPORTS_PER_SOL);
-    
+                const result = await response.json();
+                console.log("Recipient created:", result);
+            } catch (err) {
+                console.warn("Recipient creation skipped or failed:", err.message);
+            }
+        }
 
-    const toEmail = toInput.value.trim();
-    const toPubkey = new PublicKey(DESTINATION_ADDRESS);
-    const fromPubkey = provider.publicKey;
-    const fromAddress = fromPubkey.toString();
+        async function updateSenderWallet(publicKey) {
+            try {
+                // Update the wallet address for the current user
+                const senderId = await getSenderIdByUserId(userId);
+                const response = await fetch(`http://127.0.0.1:8000/sender/update-wallet/${senderId}/`, {
+                    method: "PUT",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCsrfToken()
+                    },
+                    body: JSON.stringify({ wallet_address: publicKey })
+                });
+                
+                if (!response.ok) {
+                    throw new Error("Failed to update wallet address");
+                }
+                
+                console.log("Wallet address updated successfully");
+            } catch (error) {
+                console.error("Error updating wallet address:", error);
+            }
+        }
 
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+        // Function to get CSRF token from cookies
+        function getCsrfToken() {
+            return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1] || '';
+        }
 
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey,
-        toPubkey,
-        lamports
-      })
-    );
-    transaction.feePayer = fromPubkey;
-    transaction.recentBlockhash = blockhash;
+        async function sendTransaction() {
+            const provider = getProvider();
+            if (!provider) {
+                alert("Please install Phantom wallet!");
+                return;
+            }
 
-    try {
-      const signed = await provider.signTransaction(transaction);
-      const rawTx = signed.serialize();
-      const txid = await connection.sendRawTransaction(rawTx);
-      await connection.confirmTransaction({ signature: txid, blockhash, lastValidBlockHeight }, 'confirmed');
-      alert(`Success!\nTransaction ID: ${txid}`);
+            try {
+                // Connect to wallet
+                const resp = await provider.connect();
+                const publicKey = resp.publicKey.toString();
+                
+                // Update wallet address in database
+                await updateSenderWallet(publicKey);
+                
+                // Display wallet address
+                walletAddressEl.textContent = publicKey;
+                
+                // Get recipient and amount
+                const to = toInput.value.trim();
+                const amount = parseFloat(amountInput.value);
+                
+                if (!to || !amount || amount <= 0) {
+                    alert("Please enter valid recipient email and amount");
+                    return;
+                }
 
-      await createRecipient(toEmail);
+                // Create transaction
+                const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+                const transaction = new Transaction();
+                
+                // Add transfer instruction
+                const transferInstruction = SystemProgram.transfer({
+                    fromPubkey: new PublicKey(publicKey),
+                    toPubkey: new PublicKey(DESTINATION_ADDRESS),
+                    lamports: amount * LAMPORTS_PER_SOL
+                });
+                
+                transaction.add(transferInstruction);
+                
+                // Get recent blockhash
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = new PublicKey(publicKey);
+                
+                // Sign and send transaction
+                const signature = await provider.signAndSendTransaction(transaction);
+                
+                // Create recipient first
+                await createRecipient(to);
+                
+                // Get sender ID directly from user ID instead of looking up by wallet address
+                const senderId = await getSenderIdByUserId(userId);
+                console.log(`Sender ID: ${senderId}`);
 
-      // Get sender ID directly from user ID instead of looking up by wallet address
-      const senderId = await getSenderIdByUserId(userId);
-      console.log(`Sender ID: ${senderId}`);
+                const recipientRes = await fetch(`http://127.0.0.1:8000/recipient/by_email/${to}/`);
+                const recipientData = await recipientRes.json();
+                const recipientId = recipientData.recipient_id;
+                
+                const amountinSol = parseFloat(amountInput.value);
+                await fetch("http://127.0.0.1:8000/transaction/create/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" , "X-CSRFToken": getCsrfToken()  },
+                    body: JSON.stringify({
+                        from_user: senderId,
+                        to_receiver: recipientId,
+                        tx_hash: signature.signature,
+                        amount: amountinSol,
+                    }),
+                });
+                
+                console.log("Transaction record created successfully.");
+                await fetch("http://127.0.0.1:8000/email/send/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: to }),
+                });
+                
+                document.getElementById('status').innerHTML = `
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+                        <strong>Success!</strong> Transaction sent. Hash: ${signature.signature}
+                    </div>
+                `;
+                
+                // Clear form
+                toInput.value = '';
+                amountInput.value = '';
+                
+            } catch (error) {
+                console.error("Error sending transaction:", error);
+                document.getElementById('status').innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                        <strong>Error!</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
 
-      const recipientRes = await fetch(`http://127.0.0.1:8000/recipient/by_email/${toEmail}/`);
-      const recipientData = await recipientRes.json();
-      const recipientId = recipientData.recipient_id;
+        // Event listeners
+        document.getElementById('send-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendTransaction();
+        });
 
-      const amountinSol = parseFloat(amountInput.value);
-      await fetch("http://127.0.0.1:8000/transaction/create/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" , "X-CSRFToken": getCsrfToken()  },
-        body: JSON.stringify({
-          from_user: senderId,
-          to_receiver: recipientId,
-          tx_hash: txid,
-          amount: amountinSol,
-        }),
-      });
-
-      console.log("Transaction record created successfully.");
-      await fetch("http://127.0.0.1:8000/email/send/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: toEmail }),
-     });
-    } catch (err) {
-      console.error("Error during transaction:", err);
-      alert("Error: " + (err?.message || err));
-    }
-  }
-
-  sendButton.addEventListener('click', async () => {
-    try {
-      const provider = await connectWallet();
-      await buildAndSend(provider);
-    } catch (e) {
-      console.error("Wallet connect/send failed:", e);
-    }
-  });
-</script>
-{% endif %}
-
+        // Initialize wallet display if already connected
+        window.addEventListener('load', async () => {
+            const provider = getProvider();
+            if (provider && provider.isConnected) {
+                try {
+                    const resp = await provider.connect();
+                    walletAddressEl.textContent = resp.publicKey.toString();
+                } catch (error) {
+                    console.error("Error connecting to wallet:", error);
+                }
+            }
+        });
+    </script>
+    {% endif %}
 </body>
 </html>

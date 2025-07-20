@@ -1,223 +1,201 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Pending SOL Transactions</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Receive Crypto - LAZRPAY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lazr-purple': '#2b0a3d',
+                        'lazr-pink': '#d946ef',
+                        'lazr-light-purple': '#f3e8ff',
+                        'lazr-dark-purple': '#1e0e62',
+                        'lazr-accent': '#6d28d9'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
+        .gradient-bg {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
         }
-        
-        body {
-            background-color: #f3e8ff;
-            color: #1e0e62;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(109, 40, 217, 0.1), 0 10px 10px -5px rgba(109, 40, 217, 0.04);
         }
-        
-        header {
-            background-color: #2b0a3d;
-            color: white;
-            padding: 20px 5vw;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+        .button-gradient {
+            background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
         }
-        
-        .logo {
-            display: flex;
-            align-items: center;
+        .button-gradient:hover {
+            background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
         }
-        
-        header nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        header nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
-        }
-        
-        header nav a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        h2 {
-            font-size: 2em;
-            margin-bottom: 30px;
-            color: #2b0a3d;
-            text-align: center;
-        }
-        
-        .transaction {
-            background-color: #f5f3ff;
-            border: 1px solid #d946ef;
-            padding: 25px;
-            margin-bottom: 25px;
-            margin-left: auto;
-            margin-right: auto;
-            max-width: 700px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1);
-            transition: transform 0.2s ease;
-        }
-        
-        .transaction:hover {
-            transform: translateY(-5px);
-        }
-        
-        .transaction p {
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-        
-        .transaction .tx-hash {
-            font-size: 0.85em;
-            word-break: break-all;
-            color: #6b7280;
-            font-family: monospace;
-            background-color: #f0eeff;
-            padding: 8px;
-            border-radius: 6px;
-            max-width: 100%;
-            overflow-x: auto;
-        }
-        
-        .transaction .amount {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #2b0a3d;
-        }
-        
-        .claim-button {
-            background-color: #d946ef;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-top: 15px;
-            display: block;
-        }
-        
-        .claim-button:hover {
-            background-color: #c026d3;
-        }
-        
-        #status {
-            margin-top: 20px;
-            font-weight: bold;
-            text-align: center;
-            color: #2b0a3d;
-        }
-        
-        .no-transactions {
-            text-align: center;
-            font-size: 1.1em;
-            background-color: #f5f3ff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1);
-        }
-        
-        .loading {
-            text-align: center;
-            font-size: 1.1em;
-            color: #6d28d9;
-            margin: 40px 0;
-        }
-        
-        footer {
-            background: #6d28d9;
-            color: white;
-            text-align: center;
-            padding: 20px 5vw;
-            margin-top: auto;
-        }
-
-        header {
-      background-color: #2b0a3d;
-      color: white;
-      padding: 20px 5vw;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    header nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    header nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-    .logo span {
-      font-size: 1.4em;
-      font-weight: 700;
-      margin-left: 10px;
-    }
     </style>
 </head>
 
+<body class="font-inter gradient-bg min-h-screen">
+    {% load socialaccount %}
+    
+    <!-- Header -->
+    <header class="bg-lazr-purple text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                            <img src="https://img.icons8.com/ios-filled/50/2b0a3d/flash-on.png" width="20" alt="LAZRPAY" />
+                        </div>
+                        <span class="text-xl font-bold">LAZRPAY</span>
+                    </a>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-6">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium">Send</a>
+                        <a href="{% url 'receive_main' %}" class="text-lazr-pink font-medium">Receive</a>
+                        <a href="{% url 'logout' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Logout</a>
+                    {% else %}
+                        <a href="{% provider_login_url 'google' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Sign in with Google</a>
+                    {% endif %}
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button class="text-white hover:text-lazr-pink transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="text-center mb-12">
+                <div class="w-16 h-16 bg-lazr-pink rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                </div>
+                <h1 class="text-4xl font-bold text-lazr-purple mb-4">Receive Crypto</h1>
+                <p class="text-xl text-gray-600">Check for pending transactions and claim your funds</p>
+            </div>
+
+            {% if user.is_authenticated %}
+            <!-- User Info Card -->
+            <div class="bg-white rounded-3xl card-shadow p-8 mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-lazr-light-purple rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-lazr-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-lazr-purple">Welcome back!</h3>
+                            <p class="text-gray-600">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Account Status</p>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Active
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Transactions -->
+            <div class="bg-white rounded-3xl card-shadow p-8 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-lazr-purple">Pending Transactions</h2>
+                    <button id="refresh-btn" class="flex items-center space-x-2 text-lazr-pink hover:text-pink-600 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+                
+                <div id="transaction-list" class="space-y-4">
+                    <!-- Loading state -->
+                    <div class="text-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-lazr-pink mx-auto mb-3"></div>
+                        <p class="text-gray-600">Loading transactions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="bg-white rounded-3xl card-shadow p-8">
+                <h2 class="text-2xl font-bold text-lazr-purple mb-6">Transaction History</h2>
+                <div id="transaction-history" class="space-y-4">
+                    <!-- Loading state -->
+                    <div class="text-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-lazr-pink mx-auto mb-3"></div>
+                        <p class="text-gray-600">Loading history...</p>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- User is not authenticated, show authentication prompt -->
+            <div class="flex items-center justify-center min-h-[60vh]">
+                <div class="bg-white rounded-3xl card-shadow p-8 max-w-md w-full text-center">
+                    <div class="w-16 h-16 bg-lazr-light-purple rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-lazr-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-lazr-purple mb-4">Sign In Required</h2>
+                    <p class="text-gray-600 mb-6">You need to sign in to view your pending transactions.</p>
+                    
+                    <div class="space-y-4">
+                        <a href="{% url 'home' %}" class="button-gradient text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center w-full">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Sign in with Google
+                        </a>
+                        
+                        <p class="text-sm text-gray-600">
+                            Don't have an account? 
+                            <a href="{% url 'home' %}" class="text-lazr-pink hover:underline">Sign Up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-lazr-accent text-white py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">&copy; 2025 LAZRPAY. Secure crypto transactions made simple.</p>
+        </div>
+    </footer>
+
+    {% if user.is_authenticated %}
 <script>
   // Store user data in global variables
   window.userEmail = "{{ user.email }}";
   window.userId = "{{ user.id }}";
 </script>
-
-<body>
-
-     {% load socialaccount %}
-  <header>
-    <div class="logo">
-      <a href="{% url 'home' %}">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/flash-on.png" width="24" alt="icon" />
-      </a>
-      <span>LAZRPAY</span>
-    </div>
-    <nav>
-        {% if user.is_authenticated %}
-            <a href="{% url 'index' %}">Send</a>
-            <a href="{% url 'receive_main' %}">Receive</a>
-            <a href="{% url 'logout' %}">Logout</a>
-        {% else %}
-            <a href="{% provider_login_url 'google' %}">Sign in with Google</a>
-        {% endif %}
-    </nav>
-  </header>
-
-
-    <h2>Welcome! Here are your pending transactions:</h2>
-    <div id="transaction-list">Loading...</div>
-
     <script>
         // Assume window.userEmail is set from the Django template
         const userEmail = window.userEmail;
@@ -234,28 +212,77 @@
                 const pending = transactions.filter(tx => tx.status === "pending");
 
                 if (pending.length === 0) {
-                    container.innerHTML = "<p>No pending transactions found 🎉</p>";
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Pending Transactions</h3>
+                            <p class="text-gray-500">You don't have any pending transactions to claim.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 pending.forEach(tx => {
                     const div = document.createElement("div");
-                    div.className = "transaction";
+                    div.className = "border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow";
                     div.innerHTML = `
-                        <p><strong>Amount:</strong> ${parseFloat(tx.amount).toFixed(4)} SOL</p>
-                        <p style="font-size: 0.70em;"><strong>Transaction Hash:</strong> ${tx.tx_hash}</p>
-                        <button class="claim-button" onclick="window.location.href='/receive/?tx_hash=${tx.tx_hash}'">Claim</button>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-lazr-light-purple rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-lazr-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-lazr-purple">${parseFloat(tx.amount).toFixed(4)} SOL</h3>
+                                    <p class="text-sm text-gray-600">From: ${tx.from_user || 'Unknown'}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                    Pending
+                                </span>
+                                <p class="text-xs text-gray-500 mt-1">${new Date(tx.created_at).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-600">
+                                <p><strong>Transaction ID:</strong> <span class="font-mono">${tx.tx_hash}</span></p>
+                            </div>
+                            <a href="/receive/?tx_hash=${tx.tx_hash}" 
+                               class="button-gradient text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:scale-105">
+                                Claim Now
+                            </a>
+                        </div>
                     `;
                     container.appendChild(div);
                 });
-
-            } catch (err) {
-                document.getElementById("transaction-list").innerText = "Failed to load transactions.";
-                console.error(err);
+            } catch (error) {
+                console.error("Error loading transactions:", error);
+                document.getElementById("transaction-list").innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-red-700 mb-2">Error Loading Transactions</h3>
+                        <p class="text-red-600">Failed to load your transactions. Please try again.</p>
+                    </div>
+                `;
             }
         }
 
+        // Load transactions on page load
         loadPendingTransactions();
+
+        // Refresh button functionality
+        document.getElementById('refresh-btn').addEventListener('click', loadPendingTransactions);
     </script>
+    {% endif %}
 </body>
 </html>

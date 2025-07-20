@@ -1,237 +1,150 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Claim Your SOL</title>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claim Your SOL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claim Your SOL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Claim Your SOL - LAZRPAY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lazr-purple': '#2b0a3d',
+                        'lazr-pink': '#d946ef',
+                        'lazr-light-purple': '#f3e8ff',
+                        'lazr-dark-purple': '#1e0e62',
+                        'lazr-accent': '#6d28d9'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
+        .gradient-bg {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
         }
-        
-        body {
-            background-color: #f3e8ff;
-            color: #1e0e62;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(109, 40, 217, 0.1), 0 10px 10px -5px rgba(109, 40, 217, 0.04);
         }
-        
-        header {
-            background-color: #2b0a3d;
-            color: white;
-            padding: 20px 5vw;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+        .button-gradient {
+            background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
         }
-        
-        .logo {
-            display: flex;
-            align-items: center;
+        .button-gradient:hover {
+            background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
         }
-        
-        .logo span {
-            font-size: 1.4em;
-            font-weight: 700;
-            margin-left: 10px;
-        }
-        
-        header nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        
-        header nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
-        }
-        
-        header nav a:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 140px); /* Adjust for header and footer height */
-        }
-        
-        h2 {
-            font-size: 2em;
-            margin-bottom: 20px;
-            color: #2b0a3d;
-            text-align: center;
-        }
-        
-        #claim-info {
-            font-size: 1.1em;
-            margin-bottom: 25px;
-            text-align: center;
-            color: #6d28d9;
-            font-weight: 500;
-        }
-        
-        #claim-form {
-            background-color: #f5f3ff;
-            border: 1px solid #d946ef;
-            padding: 40px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1);
-            margin: 0 auto;
-        }
-        
-        label {
-            font-weight: 600;
-            color: #2b0a3d;
-            display: block;
-            margin-bottom: 8px;
-        }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 25px;
-            border: 1px solid #a78bfa;
-            background-color: white;
-            color: #1e0e62;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.2s ease;
-        }
-        
-        input[type="text"]:focus {
-            border-color: #d946ef;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.2);
-        }
-        
-        button {
-            background-color: #d946ef;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: background-color 0.2s ease;
-        }
-        
-        button:hover {
-            background-color: #c026d3;
-        }
-        
-        #bank-claim-btn {
-            background-color: white;
-            border: 1px solid #d946ef;
-            color: #d946ef;
-        }
-        
-        #bank-claim-btn:hover {
-            background-color: #f5f3ff;
-        }
-        
-        #status {
-            margin-top: 25px;
-            font-weight: bold;
-            text-align: center;
-            color: #2b0a3d;
-        }
-        
-        footer {
-            background: #6d28d9;
-            color: white;
-            text-align: center;
-            padding: 20px 5vw;
-            margin-top: auto;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-        
-        @media (max-width: 500px) {
-            #claim-form {
-                padding: 30px 20px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            .container {
-                min-height: calc(100vh - 200px);
-                padding: 20px;
-            }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.1);
         }
     </style>
 </head>
 
-<body>
-      {% load socialaccount %}
-  <header>
-    <div class="logo">
-      <a href="{% url 'home' %}">
-      <img src="https://img.icons8.com/ios-filled/50/ffffff/flash-on.png" width="24" alt="icon" />
-      </a>
-      <span>LAZRPAY</span>
-    </div>
-    <nav>
-        {% if user.is_authenticated %}
-            <a href="{% url 'index' %}">Send</a>
-            <a href="{% url 'receive_main' %}">Receive</a>
-            <a href="{% url 'logout' %}">Logout</a>
-        {% else %}
-            <a href="{% provider_login_url 'google' %}">Sign in with Google</a>
-        {% endif %}
-    </nav>
-  </header>
-
-
-    <h2>Claim Your SOL</h2>
-    <p id="claim-info">Loading transaction...</p>
-
+<body class="font-inter gradient-bg min-h-screen">
+    {% load socialaccount %}
     
-    <form id="claim-form" style="display:none;">
-        <label>Enter your wallet address:</label><br>
-        <input type="text" id="wallet" required><br><br>
-        <button type="submit" id="claim-btn">Claim</button>
-        <button type="button" id="bank-claim-btn" style="margin-left: 10px;">Claim via Bank</button>
-    </form>
+    <!-- Header -->
+    <header class="bg-lazr-purple text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                            <img src="https://img.icons8.com/ios-filled/50/2b0a3d/flash-on.png" width="20" alt="LAZRPAY" />
+                        </div>
+                        <span class="text-xl font-bold">LAZRPAY</span>
+                    </a>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-6">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium">Send</a>
+                        <a href="{% url 'receive_main' %}" class="text-lazr-pink font-medium">Receive</a>
+                        <a href="{% url 'logout' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Logout</a>
+                    {% else %}
+                        <a href="{% provider_login_url 'google' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Sign in with Google</a>
+                    {% endif %}
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button class="text-white hover:text-lazr-pink transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <p id="status"></p>
+    <!-- Main Content -->
+    <main class="flex-1 py-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Page Header -->
+            <div class="text-center mb-12">
+                <div class="w-16 h-16 bg-lazr-pink rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                </div>
+                <h1 class="text-4xl font-bold text-lazr-purple mb-4">Claim Your SOL</h1>
+                <p id="claim-info" class="text-xl text-gray-600">Loading transaction...</p>
+            </div>
+
+            <!-- Claim Form -->
+            <div class="bg-white rounded-3xl card-shadow p-8 max-w-2xl mx-auto">
+                <form id="claim-form" class="space-y-6" style="display:none;">
+                    <div>
+                        <label for="wallet" class="block text-sm font-semibold text-lazr-purple mb-3">Enter your wallet address:</label>
+                        <input 
+                            type="text" 
+                            id="wallet" 
+                            required
+                            placeholder="Enter your Solana wallet address"
+                            class="w-full px-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-lazr-pink focus:border-transparent input-focus transition-all duration-200"
+                        >
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button 
+                            type="submit" 
+                            id="claim-btn"
+                            class="flex-1 button-gradient text-white py-4 px-8 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center justify-center"
+                        >
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                            </svg>
+                            Claim SOL
+                        </button>
+                        <button 
+                            type="button" 
+                            id="bank-claim-btn"
+                            class="flex-1 bg-white border-2 border-lazr-pink text-lazr-pink py-4 px-8 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center justify-center"
+                        >
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            Claim via Bank
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Status Messages -->
+                <div id="status" class="text-center mt-6"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-lazr-accent text-white py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">&copy; 2025 LAZRPAY. Secure crypto transactions made simple.</p>
+        </div>
+    </footer>
 
     <script>
         // Function to get CSRF token from cookies
@@ -248,22 +161,32 @@
 
         // Check if txHash is present and load transaction
         async function loadTransaction() {
-            const res = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
-            const data = await res.json();
+            if (!txHash) {
+                document.getElementById('claim-info').textContent = 'No transaction hash provided.';
+                return;
+            }
 
-            if (res.ok && data.status === "pending") {
-                document.getElementById("claim-info").innerText = 
-                    `You're claiming ${data.amount} SOL sent to ${data.to_receiver_email}.`;
-                document.getElementById("claim-form").style.display = "block";
-            } else {
-                document.getElementById("claim-info").innerText = 
-                    "Invalid or already claimed transaction.";
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/transaction/by_txid/${txHash}/`);
+                const data = await response.json();
+
+                if (response.ok && data.status === "pending") {
+                    document.getElementById('claim-info').textContent = 
+                        `You're claiming ${data.amount} SOL sent to ${data.to_receiver_email}.`;
+                    document.getElementById('claim-form').style.display = 'block';
+                } else {
+                    document.getElementById('claim-info').textContent = 
+                        "Invalid or already claimed transaction.";
+                }
+            } catch (error) {
+                console.error('Error loading transaction:', error);
+                document.getElementById('claim-info').textContent = 'Error loading transaction.';
             }
         }
 
         document.getElementById('claim-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-
+            
             // Prevent re-submission
             if (claimed) return;
 
@@ -274,7 +197,7 @@
 
             // Send the transaction to the wallet
             const res = await fetch('http://127.0.0.1:8000/sol/send/', {
-                method: 'POST',
+                method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ tx_hash: txHash, recipient: wallet, amount: amount })
             });
@@ -283,7 +206,7 @@
             const result = await res.json();
             if (res.ok) {
                 await fetch(`http://127.0.0.1:8000/update/status/${txHash}/`, {
-                    method: 'PATCH',
+                    method: "PATCH",
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': getCsrfToken()
@@ -291,21 +214,56 @@
                     body: JSON.stringify({ status: 'confirmed' })
                 });
 
-                document.getElementById("claim-info").innerText = 
-                    `Transaction successful!`;
+                document.getElementById('status').innerHTML = `
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
+                        <strong>Success!</strong> Transaction successful!
+                    </div>
+                `;
                 
                 // Disable claiming again
                 claimed = true;
-                document.getElementById('claim-form').style.display = "none";
-
+                document.getElementById('claim-form').style.display = 'none';
             } else {
-                document.getElementById("claim-info").innerText = 
-                    `Error: ${result.error}`;
+                document.getElementById('status').innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                        <strong>Error!</strong> ${result.error}
+                    </div>
+                `;
             }
-            document.getElementById("status").innerText = 
-                res.ok ? `✅ Success! Tx ID: ${result.txid}` : `❌ Error: ${result.error}`;
         });
 
+        document.getElementById('bank-claim-btn').addEventListener('click', async () => {
+            if (claimed) return;
+            
+            try {
+                await fetch(`http://127.0.0.1:8000/update/status/${txHash}/`, {
+                    method: "PATCH",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ status: 'bank_claimed' })
+                });
+
+                document.getElementById('status').innerHTML = `
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
+                        <strong>Success!</strong> Your SOL will be transferred to your bank account within 1-3 business days.
+                    </div>
+                `;
+                
+                claimed = true;
+                document.getElementById('claim-form').style.display = 'none';
+            } catch (error) {
+                console.error('Error claiming transaction:', error);
+                document.getElementById('status').innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                        <strong>Error!</strong> Failed to claim transaction. Please try again.
+                    </div>
+                `;
+            }
+        });
+
+        // Load transaction on page load
         loadTransaction();
     </script>
 </body>
