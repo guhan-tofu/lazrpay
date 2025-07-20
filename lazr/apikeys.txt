@@ -1,0 +1,5 @@
+"coinbase API key": "wVRjizC9mzO40w2+Xv7t+nPEY3vUeX9CmXqcIO88htN/vspxXL07YjlVyNfMyBUjH5lBZJWbxNXIh6v69kf5nQ=="
+
+
+"paypal API key": "EFFy4SRk53eh4t7HwkaZGER34-6nBXBUYaaJTS-A2aN0iEgaV3t5umQmdQTs4-qts3oJslbrmTOIU9I-"
+"paypal client id": "AWCIaHNXvQ2LTgYwhZrIZDqrUcM60y_zZ4Fuzi3M_0l_ptzjlpBJxsXUCnvyR7v5auZpajf4GmOMszSG"
