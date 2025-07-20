@@ -11,7 +11,7 @@ from allauth.account.signals import user_signed_up
 class Sender(models.Model):
     sender_id = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-    wallet_address = models.CharField(max_length=44, unique=True, default='', blank=True)
+    wallet_address = models.CharField(max_length=44, unique=True, null=True, blank=True)
     
     def __str__(self):
         if self.user:
@@ -24,8 +24,9 @@ def create_sender_for_social_login(request, user, **kwargs):
     """
     Create a Sender instance when a user signs up via social auth
     """
-    # Create the sender with an empty wallet address
-    Sender.objects.get_or_create(user=user)
+    # Create the sender without a wallet address initially
+    # The wallet address will be assigned later when the user connects their wallet
+    Sender.objects.get_or_create(user=user, defaults={'wallet_address': None})
 
 class Recipient(models.Model):
     recipient_id = models.AutoField(primary_key=True)

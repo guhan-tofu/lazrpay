@@ -355,9 +355,8 @@
 
       await createRecipient(toEmail);
 
-      const senderRes = await fetch(`http://127.0.0.1:8000/sender/by_wallet/${fromAddress}/`);
-      const senderData = await senderRes.json();
-      const senderId = senderData.sender_id;
+      // Get sender ID directly from user ID instead of looking up by wallet address
+      const senderId = await getSenderIdByUserId(userId);
       console.log(`Sender ID: ${senderId}`);
 
       const recipientRes = await fetch(`http://127.0.0.1:8000/recipient/by_email/${toEmail}/`);
