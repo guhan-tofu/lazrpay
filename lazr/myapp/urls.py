@@ -22,8 +22,11 @@ urlpatterns = [
     path('sender/update-wallet/<str:sender_id>/', views.UpdateWalletAddressView.as_view(), name='update-wallet'),
     path("email/send/", views.send_welcome_email, name="send_welcome_email"),
     path("sol/send/", views.send_sol, name="send_sol"),
+    path("moonpay-claim/", views.transak_claim_view, name="moonpay_claim"),
+    path("claim-success/", views.claim_success_view, name="claim_success"),
     path("logout", views.logout_view, name="logout"),
-
+    path("moonpay/webhook/", views.moonpay_webhook, name="moonpay_webhook"),
+    path("moonpay/test-webhook/", views.test_moonpay_webhook, name="test_moonpay_webhook"),
 ]
 
 # Compare this snippet from lazr/lazr/urls.py:

@@ -36,7 +36,7 @@
         }
         .button-gradient:hover {
             background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
-        }
+            }
         .input-focus:focus {
             box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.1);
         }
@@ -44,7 +44,7 @@
 </head>
 
 <body class="font-inter gradient-bg min-h-screen">
-    {% load socialaccount %}
+      {% load socialaccount %}
     
     <!-- Header -->
     <header class="bg-lazr-purple text-white shadow-lg">
@@ -57,17 +57,17 @@
                         </div>
                         <span class="text-xl font-bold">LAZRPAY</span>
                     </a>
-                </div>
+    </div>
                 
                 <nav class="hidden md:flex items-center space-x-6">
-                    {% if user.is_authenticated %}
+        {% if user.is_authenticated %}
                         <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium">Send</a>
                         <a href="{% url 'receive_main' %}" class="text-lazr-pink font-medium">Receive</a>
                         <a href="{% url 'logout' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Logout</a>
-                    {% else %}
+        {% else %}
                         <a href="{% provider_login_url 'google' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Sign in with Google</a>
-                    {% endif %}
-                </nav>
+        {% endif %}
+    </nav>
                 
                 <!-- Mobile menu button -->
                 <div class="md:hidden">
@@ -79,7 +79,7 @@
                 </div>
             </div>
         </div>
-    </header>
+  </header>
 
     <!-- Main Content -->
     <main class="flex-1 py-12">
@@ -131,7 +131,9 @@
                             Claim via Bank
                         </button>
                     </div>
-                </form>
+    </form>
+
+
 
                 <!-- Status Messages -->
                 <div id="status" class="text-center mt-6"></div>
@@ -172,11 +174,11 @@
 
                 if (response.ok && data.status === "pending") {
                     document.getElementById('claim-info').textContent = 
-                        `You're claiming ${data.amount} SOL sent to ${data.to_receiver_email}.`;
+                    `You're claiming ${data.amount} SOL sent to ${data.to_receiver_email}.`;
                     document.getElementById('claim-form').style.display = 'block';
-                } else {
+            } else {
                     document.getElementById('claim-info').textContent = 
-                        "Invalid or already claimed transaction.";
+                    "Invalid or already claimed transaction.";
                 }
             } catch (error) {
                 console.error('Error loading transaction:', error);
@@ -186,7 +188,7 @@
 
         document.getElementById('claim-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             // Prevent re-submission
             if (claimed) return;
 
@@ -235,32 +237,8 @@
         document.getElementById('bank-claim-btn').addEventListener('click', async () => {
             if (claimed) return;
             
-            try {
-                await fetch(`http://127.0.0.1:8000/update/status/${txHash}/`, {
-                    method: "PATCH",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken()
-                    },
-                    body: JSON.stringify({ status: 'bank_claimed' })
-                });
-
-                document.getElementById('status').innerHTML = `
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
-                        <strong>Success!</strong> Your SOL will be transferred to your bank account within 1-3 business days.
-                    </div>
-                `;
-                
-                claimed = true;
-                document.getElementById('claim-form').style.display = 'none';
-            } catch (error) {
-                console.error('Error claiming transaction:', error);
-                document.getElementById('status').innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-                        <strong>Error!</strong> Failed to claim transaction. Please try again.
-                    </div>
-                `;
-            }
+            // Redirect to MoonPay claim page
+            window.location.href = `/moonpay-claim/?tx_hash=${txHash}`;
         });
 
         // Load transaction on page load

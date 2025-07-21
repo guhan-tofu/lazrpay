@@ -11,6 +11,12 @@ from .serializers import RecipientSerializer, TransactionSerializer, SenderSeria
 from django.contrib.auth import logout
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
+import hmac
+import hashlib
+import json
+from django.http import HttpResponse, HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
+from .models import Transaction
 
 # Create your views here.
 def my_view(request):
@@ -43,6 +49,28 @@ def my_receive_view(request):
 
 def my_receive_main_view(request):
     return render(request, 'receive_main.html')
+
+def transak_claim_view(request):
+    if not request.user.is_authenticated:
+        return redirect('home')
+    
+    tx_hash = request.GET.get('tx_hash')
+    if not tx_hash:
+        return render(request, 'moonpay_claim.html', {'error': 'No transaction specified.'})
+    
+    try:
+        transaction = Transaction.objects.get(tx_hash=tx_hash)
+    except Transaction.DoesNotExist:
+        return render(request, 'moonpay_claim.html', {'error': 'Transaction not found.'})
+    
+    # Check that the transaction was sent to the logged-in user's email
+    if transaction.to_receiver.email != request.user.email:
+        raise PermissionDenied("You do not have permission to claim this transaction.")
+    
+    return render(request, 'moonpay_claim.html', {'transaction': transaction})
+
+def claim_success_view(request):
+    return render(request, 'claim_success.html')
 
 def logout_view(request):
     logout(request)
@@ -221,3 +249,50 @@ class SenderIdView(generics.RetrieveAPIView):
     serializer_class = SenderIdOnlySerializer
     permission_classes = [AllowAny]
     lookup_field = 'user'
+
+@csrf_exempt
+def moonpay_webhook(request):
+    webhook_secret = "wk_test_wi418cZi42L1XErSspSiIuWnQSfutga8"
+    signature = request.headers.get("Moonpay-Signature", "")
+    body = request.body
+
+    # Verify signature
+    expected_signature = hmac.new(
+        webhook_secret.encode(),
+        body,
+        hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(signature, expected_signature):
+        return HttpResponseForbidden("Invalid signature")
+
+    data = json.loads(body)
+    # Log the payload for debugging
+    print("MoonPay Webhook Payload:", data)
+
+    # Example: data['externalCustomerId'] should match your user/email
+    # Example: data['status'] == 'completed' for successful payout
+    if data.get("status") == "completed":
+        # Try to find the transaction by tx_hash or email
+        tx_hash = data.get("externalTransactionId")
+        if tx_hash:
+            try:
+                txn = Transaction.objects.get(tx_hash=tx_hash)
+                txn.status = "claimed"
+                txn.save()
+            except Transaction.DoesNotExist:
+                pass  # Optionally log this
+    return HttpResponse("OK")
+
+@csrf_exempt
+def test_moonpay_webhook(request):
+    # For local testing only! No auth, no signature check.
+    tx_hash = request.GET.get('tx_hash')
+    if not tx_hash:
+        return HttpResponse("Missing tx_hash", status=400)
+    try:
+        txn = Transaction.objects.get(tx_hash=tx_hash)
+        txn.status = "claimed"
+        txn.save()
+        return HttpResponse(f"Transaction {tx_hash} marked as claimed (test mode).")
+    except Transaction.DoesNotExist:
+        return HttpResponse("Transaction not found", status=404)
