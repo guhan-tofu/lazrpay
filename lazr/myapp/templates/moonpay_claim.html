@@ -1,49 +1,181 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Claim SOL via Bank - LAZRPAY</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        'lazr-purple': '#6366f1',
-                        'lazr-pink': '#ec4899',
-                        'lazr-accent': '#1e293b'
+                        'lazr-purple': '#2b0a3d',
+                        'lazr-pink': '#d946ef',
+                        'lazr-light-purple': '#f3e8ff',
+                        'lazr-dark-purple': '#1e0e62',
+                        'lazr-accent': '#6d28d9',
+                        'dark-bg': '#0f0f23',
+                        'dark-card': '#1a1a2e',
+                        'dark-text': '#e2e8f0'
                     },
-                    boxShadow: {
-                        'card': '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.6s ease-out',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite alternate'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(50px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 20px rgba(217, 70, 239, 0.3)' },
+                            '100%': { boxShadow: '0 0 30px rgba(217, 70, 239, 0.6)' }
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        .button-gradient {
-            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glassmorphism {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+        }
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
         }
         .card-shadow {
-            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 40px -12px rgba(109, 40, 217, 0.15);
+        }
+        .dark .card-shadow {
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+        }
+        .button-gradient {
+            background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+        }
+        .button-gradient:hover {
+            background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
+            transform: translateY(-4px);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #d946ef 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .dark .sticky-header {
+            background: rgba(15, 15, 35, 0.95);
+        }
+        .theme-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            transition: all 0.3s ease-in-out;
         }
         .input-focus:focus {
             transform: translateY(-2px);
         }
+        /* Theme Toggle Slider Styles */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        .dark .theme-toggle::before {
+            transform: translateX(30px);
+        }
+        .theme-toggle::after {
+            content: '\f186';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            transform: translateY(-50%);
+            font-size: 12px;
+            transition: all 0.3s ease;
+            z-index: 1;
+            color: #fbbf24;
+        }
+        .dark .theme-toggle::after {
+            content: '\f185';
+            left: 38px;
+            color: #f59e0b;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen flex flex-col">
+<body class="font-inter gradient-bg min-h-screen theme-transition">
     <!-- Header -->
-    <header class="bg-white shadow-sm">
+    <header class="sticky-header shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-6">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-gradient-to-r from-lazr-purple to-lazr-pink rounded-lg flex items-center justify-center mr-3">
-                        <span class="text-white font-bold text-lg">L</span>
+                    <div class="w-12 h-12 bg-gradient-to-r from-lazr-purple to-lazr-pink rounded-2xl flex items-center justify-center mr-3 shadow-lg">
+                        <i class="fas fa-bolt text-white text-lg"></i>
                     </div>
-                    <span class="text-2xl font-bold text-lazr-purple">LAZRPAY</span>
+                    <span class="text-2xl font-bold text-lazr-purple dark:text-white">LAZRPAY</span>
                 </div>
+
+                <!-- Dark Mode Toggle Slider -->
+                <div class="theme-toggle" id="theme-toggle"></div>
             </div>
         </div>
     </header>
@@ -52,72 +184,78 @@
     <main class="flex-1 py-12">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Page Header -->
-            <div class="text-center mb-12">
-                <div class="w-16 h-16 bg-lazr-pink rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                    </svg>
+            <div class="text-center mb-12 fade-in-section">
+                <div class="w-20 h-20 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <i class="fas fa-university text-white text-2xl"></i>
                 </div>
-                <h1 class="text-4xl font-bold text-lazr-purple mb-4">Claim SOL via Bank Transfer</h1>
-                <p id="claim-info" class="text-xl text-gray-600">
-                  {% if transaction %}
-                    Claiming {{ transaction.amount }} SOL for recipient {{ transaction.to_receiver.email }}
-                  {% else %}
-                    Loading transaction details...
-                  {% endif %}
+                <h1 class="text-5xl font-black text-lazr-purple dark:text-white mb-4">Claim SOL via Bank Transfer</h1>
+                <p id="claim-info" class="text-xl text-gray-600 dark:text-gray-300">
+                    {% if transaction %}
+                        Claiming {{ transaction.amount }} SOL for recipient {{ transaction.to_receiver.email }}
+                    {% else %}
+                        Loading transaction details...
+                    {% endif %}
                 </p>
             </div>
 
             <!-- Transaction Details Card -->
-            <div class="bg-white rounded-3xl card-shadow p-8 max-w-2xl mx-auto mb-8">
+            <div class="glassmorphism rounded-3xl card-shadow p-8 max-w-2xl mx-auto mb-8 hover-lift fade-in-section">
                 <div class="text-center">
-                    <h2 class="text-2xl font-bold text-lazr-purple mb-4">Transaction Summary</h2>
-                    <div class="bg-gray-50 rounded-xl p-6 mb-6">
-                        <div class="grid grid-cols-2 gap-4 text-left">
+                    <h2 class="text-3xl font-bold text-lazr-purple dark:text-white mb-6">
+                        <i class="fas fa-receipt mr-3"></i>Transaction Summary
+                    </h2>
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 mb-6">
+                        <div class="grid grid-cols-2 gap-6 text-left">
                             <div>
-                                <p class="text-sm text-gray-600">Amount</p>
-                                <p id="amount-display" class="text-lg font-semibold text-lazr-purple">
-                                  {% if transaction %}{{ transaction.amount }} SOL{% else %}Loading...{% endif %}
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    <i class="fas fa-coins mr-2"></i>Amount
+                                </p>
+                                <p id="amount-display" class="text-xl font-bold text-lazr-purple dark:text-white">
+                                    {% if transaction %}{{ transaction.amount }} SOL{% else %}Loading...{% endif %}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-600">Recipient</p>
-                                <p id="recipient-display" class="text-lg font-semibold text-lazr-purple">
-                                  {% if transaction %}{{ transaction.to_receiver.email }}{% else %}Loading...{% endif %}
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                    <i class="fas fa-user mr-2"></i>Recipient
+                                </p>
+                                <p id="recipient-display" class="text-xl font-bold text-lazr-purple dark:text-white">
+                                    {% if transaction %}{{ transaction.to_receiver.email }}{% else %}Loading...{% endif %}
                                 </p>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                        <div class="flex items-center">
-                            <svg class="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <p class="text-blue-800">
-                                <strong>Secure Process:</strong> Your SOL will be converted to INR and sent directly to your bank account via MoonPay.
-                            </p>
+                    <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-2xl p-6 mb-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-shield-alt text-blue-600 dark:text-blue-400 text-xl mr-4 mt-1"></i>
+                            <div>
+                                <p class="text-blue-800 dark:text-blue-200 font-medium">
+                                    <strong>Secure Process:</strong> Your SOL will be converted to INR and sent directly to your bank account via MoonPay.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- MoonPay Integration -->
-            <div class="bg-white rounded-3xl card-shadow p-8 max-w-2xl mx-auto">
+            <div class="glassmorphism rounded-3xl card-shadow p-8 max-w-2xl mx-auto hover-lift fade-in-section">
                 <div class="text-center mb-6">
-                    <h2 class="text-2xl font-bold text-lazr-purple mb-4">Complete Your Claim</h2>
-                    <p class="text-gray-600">Click the button below to start the secure bank transfer process.</p>
+                    <h2 class="text-3xl font-bold text-lazr-purple dark:text-white mb-4">
+                        <i class="fas fa-rocket mr-3"></i>Complete Your Claim
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-300">Click the button below to start the secure bank transfer process.</p>
                 </div>
+                
                 <div class="text-center">
                     <button 
                         id="start-bank-transfer"
-                        class="button-gradient text-white py-4 px-8 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center justify-center mx-auto"
+                        class="button-gradient text-white py-4 px-8 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center mx-auto group"
                     >
-                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                        </svg>
+                        <i class="fas fa-university mr-3 group-hover:translate-x-1 transition-transform"></i>
                         Start Bank Transfer
                     </button>
                 </div>
+                
                 <!-- Status Messages -->
                 <div id="status" class="text-center mt-6"></div>
             </div>
@@ -125,7 +263,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-lazr-accent text-white py-8 mt-16">
+    <footer class="bg-lazr-accent dark:bg-dark-bg text-white py-8 mt-16 theme-transition">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p class="text-sm">&copy; 2025 LAZRPAY. Secure crypto transactions made simple.</p>
         </div>
@@ -133,7 +271,7 @@
 
     <!-- MoonPay SDK -->
     <script src="https://static.moonpay.com/web-sdk/v1/moonpay-web-sdk.min.js"></script>
-    
+
     <script>
         document.getElementById("start-bank-transfer").addEventListener("click", function () {
             // Get transaction details
@@ -142,10 +280,10 @@
             var txHash = "{% if transaction %}{{ transaction.tx_hash }}{% else %}''{% endif %}";
 
             console.log("Starting MoonPay transaction:", { amount, email, txHash });
-
+            
             // Show loading
             var statusDiv = document.getElementById('status');
-            statusDiv.innerHTML = '<div class="mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">Loading MoonPay widget...</div>';
+            statusDiv.innerHTML = '<div class="mt-4 p-4 bg-blue-100 dark:bg-blue-900 border border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300 rounded-2xl">Loading MoonPay widget...</div>';
 
             // Initialize MoonPay SDK
             if (typeof window.MoonPayWebSdk !== 'undefined') {
@@ -189,7 +327,7 @@
                                 
                                 if (!walletAddress) {
                                     console.error("No wallet address provided by MoonPay");
-                                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: Could not get wallet address from MoonPay</div>';
+                                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Error: Could not get wallet address from MoonPay</div>';
                                     return {
                                         depositId: depositId
                                     };
@@ -213,12 +351,12 @@
                                 .then(data => {
                                     console.log('SOL transfer response:', data);
                                     if (data.success) {
-                                        statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">SOL transferred successfully! Transaction ID: ' + (data.solana_tx_id || 'N/A') + '<br>Sent to: ' + walletAddress + '<br>Amount: ' + cryptoAmount + ' SOL</div>';
-                                        
+                                        statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl">SOL transferred successfully! Transaction ID: ' + (data.solana_tx_id || 'N/A') + '<br>Sent to: ' + walletAddress + '<br>Amount: ' + cryptoAmount + ' SOL</div>';
+
                                         // Disable the button to prevent multiple claims
                                         document.getElementById('start-bank-transfer').disabled = true;
-                                        document.getElementById('start-bank-transfer').innerHTML = 'Transaction Completed';
-                                        
+                                        document.getElementById('start-bank-transfer').innerHTML = '<i class="fas fa-check mr-3"></i>Transaction Completed';
+
                                         // Redirect to success page
                                         setTimeout(function() {
                                             var successUrl = '/deposit-success/?tx_hash=' + encodeURIComponent(txHash) + 
@@ -227,12 +365,12 @@
                                             window.location.href = successUrl;
                                         }, 3000);
                                     } else {
-                                        statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: ' + (data.error || 'Unknown error') + '</div>';
+                                        statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Error: ' + (data.error || 'Unknown error') + '</div>';
                                     }
                                 })
                                 .catch(error => {
                                     console.error('Error:', error);
-                                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: ' + error.message + '</div>';
+                                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Error: ' + error.message + '</div>';
                                 });
                                 
                                 return {
@@ -241,7 +379,7 @@
                             },
                             onTransactionCompleted: function(transaction) {
                                 console.log("Transaction completed:", transaction);
-                                statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">Transaction completed! Your INR will be deposited to your bank account.</div>';
+                                statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl">Transaction completed! Your INR will be deposited to your bank account.</div>';
                             },
                             onCloseOverlay: function() {
                                 console.log("Widget closed");
@@ -253,16 +391,16 @@
                     widget.show();
                     
                     // Remove loading message
-                    var loadingMsg = statusDiv.querySelector('.bg-blue-100');
+                    var loadingMsg = statusDiv.querySelector('.bg-blue-100, .bg-blue-900');
                     if (loadingMsg) loadingMsg.remove();
                     
                 } catch (error) {
                     console.error("Error initializing MoonPay widget:", error);
-                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Failed to initialize MoonPay widget. Please refresh and try again.</div>';
+                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Failed to initialize MoonPay widget. Please refresh and try again.</div>';
                 }
             } else {
                 console.error("MoonPay SDK not available");
-                statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">MoonPay SDK failed to load. Please refresh and try again.</div>';
+                statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">MoonPay SDK failed to load. Please refresh and try again.</div>';
             }
         });
 
@@ -281,6 +419,39 @@
             }
             return cookieValue;
         }
+
+        // Dark mode toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        html.classList.toggle('dark', currentTheme === 'dark');
+
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in sections
+        document.querySelectorAll('.fade-in-section').forEach(section => {
+            observer.observe(section);
+        });
     </script>
 </body>
 </html> 

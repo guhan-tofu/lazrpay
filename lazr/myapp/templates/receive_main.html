@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receive Crypto - LAZRPAY</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -15,63 +17,200 @@
                         'lazr-pink': '#d946ef',
                         'lazr-light-purple': '#f3e8ff',
                         'lazr-dark-purple': '#1e0e62',
-                        'lazr-accent': '#6d28d9'
+                        'lazr-accent': '#6d28d9',
+                        'dark-bg': '#0f0f23',
+                        'dark-card': '#1a1a2e',
+                        'dark-text': '#e2e8f0'
                     },
                     fontFamily: {
                         'inter': ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.6s ease-out',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite alternate'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(50px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 20px rgba(217, 70, 239, 0.3)' },
+                            '100%': { boxShadow: '0 0 30px rgba(217, 70, 239, 0.6)' }
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glassmorphism {
+            background: rgba(26, 26, 46, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
         .gradient-bg {
             background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
         }
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+        }
         .card-shadow {
-            box-shadow: 0 10px 25px -5px rgba(109, 40, 217, 0.1), 0 10px 10px -5px rgba(109, 40, 217, 0.04);
+            box-shadow: 0 20px 40px -12px rgba(109, 40, 217, 0.15);
+        }
+        .dark .card-shadow {
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
         }
         .button-gradient {
             background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
         }
         .button-gradient:hover {
             background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
+            transform: translateY(-4px);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #d946ef 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(20px);
+            background: rgba(43, 10, 61, 0.95);
+        }
+        .dark .sticky-header {
+            background: rgba(15, 15, 35, 0.95);
+        }
+        .theme-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            transition: all 0.3s ease-in-out;
+        }
+        /* Theme Toggle Slider Styles */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        .dark .theme-toggle::before {
+            transform: translateX(30px);
+        }
+        .theme-toggle::after {
+            content: '\f186';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            transform: translateY(-50%);
+            font-size: 12px;
+            transition: all 0.3s ease;
+            z-index: 1;
+            color: #fbbf24;
+        }
+        .dark .theme-toggle::after {
+            content: '\f185';
+            left: 38px;
+            color: #f59e0b;
         }
     </style>
 </head>
 
-<body class="font-inter gradient-bg min-h-screen">
+<body class="font-inter gradient-bg min-h-screen theme-transition">
     {% load socialaccount %}
     
     <!-- Header -->
-    <header class="bg-lazr-purple text-white shadow-lg">
+    <header class="sticky-header text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-3">
-                    <a href="{% url 'home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                            <img src="https://img.icons8.com/ios-filled/50/2b0a3d/flash-on.png" width="20" alt="LAZRPAY" />
+                    <a href="{% url 'home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity group">
+                        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-bolt text-lazr-purple text-lg"></i>
                         </div>
-                        <span class="text-xl font-bold">LAZRPAY</span>
+                        <span class="text-2xl font-bold">LAZRPAY</span>
                     </a>
                 </div>
                 
-                <nav class="hidden md:flex items-center space-x-6">
+                <nav class="hidden md:flex items-center space-x-8">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium">Send</a>
-                        <a href="{% url 'receive_main' %}" class="text-lazr-pink font-medium">Receive</a>
-                        <a href="{% url 'logout' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Logout</a>
+                        <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium relative group">
+                            <i class="fas fa-paper-plane mr-2"></i>Send
+                            <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-lazr-pink transition-all duration-300 group-hover:w-full"></span>
+                        </a>
+                        <a href="{% url 'receive_main' %}" class="text-lazr-pink font-medium relative group">
+                            <i class="fas fa-download mr-2"></i>Receive
+                            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-lazr-pink"></span>
+                        </a>
+                        <a href="{% url 'logout' %}" class="button-gradient text-white px-6 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </a>
                     {% else %}
-                        <a href="{% provider_login_url 'google' %}" class="bg-lazr-pink hover:bg-pink-600 text-white px-4 py-2 rounded-lg transition-colors font-medium">Sign in with Google</a>
+                        <a href="{% provider_login_url 'google' %}" class="button-gradient text-white px-6 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105">
+                            <i class="fab fa-google mr-2"></i>Sign in with Google
+                        </a>
                     {% endif %}
                 </nav>
+
+                <!-- User Info Display -->
+                {% if user.is_authenticated %}
+                <div class="hidden md:flex items-center space-x-3 text-sm text-gray-300">
+                    <i class="fas fa-user-circle text-lazr-pink"></i>
+                    <span>Logged in as: {{ user.email|truncatechars:20 }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Dark Mode Toggle Slider -->
+                <div class="theme-toggle" id="theme-toggle"></div>
                 
                 <!-- Mobile menu button -->
                 <div class="md:hidden">
                     <button class="text-white hover:text-lazr-pink transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
+                        <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
@@ -82,48 +221,44 @@
     <main class="flex-1 py-12">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Page Header -->
-            <div class="text-center mb-12">
-                <div class="w-16 h-16 bg-lazr-pink rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                    </svg>
+            <div class="text-center mb-12 fade-in-section">
+                <div class="w-20 h-20 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <i class="fas fa-download text-white text-2xl"></i>
                 </div>
-                <h1 class="text-4xl font-bold text-lazr-purple mb-4">Receive Crypto</h1>
-                <p class="text-xl text-gray-600">Check for pending transactions and claim your funds</p>
+                <h1 class="text-5xl font-black text-lazr-purple dark:text-white mb-4">Receive Crypto</h1>
+                <p class="text-xl text-gray-600 dark:text-gray-300">Check for pending transactions and claim your funds</p>
             </div>
 
             {% if user.is_authenticated %}
             <!-- User Info Card -->
-            <div class="bg-white rounded-3xl card-shadow p-8 mb-8">
+            <div class="glassmorphism rounded-3xl card-shadow p-8 mb-8 hover-lift fade-in-section">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <div class="w-12 h-12 bg-lazr-light-purple rounded-full flex items-center justify-center">
-                            <svg class="w-6 h-6 text-lazr-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
+                        <div class="w-14 h-14 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-2xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-user text-lazr-purple text-xl"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-lazr-purple">Welcome back!</h3>
-                            <p class="text-gray-600">{{ user.email }}</p>
+                            <h3 class="text-xl font-bold text-lazr-purple dark:text-white">Welcome back!</h3>
+                            <p class="text-gray-600 dark:text-gray-300">{{ user.email }}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="text-sm text-gray-500">Account Status</p>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Active
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Account Status</p>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                            <i class="fas fa-check-circle mr-1"></i>Active
                         </span>
                     </div>
                 </div>
             </div>
 
             <!-- Pending Transactions -->
-            <div class="bg-white rounded-3xl card-shadow p-8 mb-8">
+            <div class="glassmorphism rounded-3xl card-shadow p-8 mb-8 hover-lift fade-in-section">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold text-lazr-purple">Pending Transactions</h2>
-                    <button id="refresh-btn" class="flex items-center space-x-2 text-lazr-pink hover:text-pink-600 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
+                    <h2 class="text-3xl font-bold text-lazr-purple dark:text-white">
+                        <i class="fas fa-clock mr-3"></i>Pending Transactions
+                    </h2>
+                    <button id="refresh-btn" class="flex items-center space-x-2 text-lazr-pink hover:text-pink-600 transition-colors group">
+                        <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-300"></i>
                         <span>Refresh</span>
                     </button>
                 </div>
@@ -132,19 +267,21 @@
                     <!-- Loading state -->
                     <div class="text-center py-8">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-lazr-pink mx-auto mb-3"></div>
-                        <p class="text-gray-600">Loading transactions...</p>
+                        <p class="text-gray-600 dark:text-gray-300">Loading transactions...</p>
                     </div>
                 </div>
             </div>
 
             <!-- Transaction History -->
-            <div class="bg-white rounded-3xl card-shadow p-8">
-                <h2 class="text-2xl font-bold text-lazr-purple mb-6">Transaction History</h2>
+            <div class="glassmorphism rounded-3xl card-shadow p-8 hover-lift fade-in-section">
+                <h2 class="text-3xl font-bold text-lazr-purple dark:text-white mb-6">
+                    <i class="fas fa-history mr-3"></i>Transaction History
+                </h2>
                 <div id="transaction-history" class="space-y-4">
                     <!-- Loading state -->
                     <div class="text-center py-8">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-lazr-pink mx-auto mb-3"></div>
-                        <p class="text-gray-600">Loading history...</p>
+                        <p class="text-gray-600 dark:text-gray-300">Loading history...</p>
                     </div>
                 </div>
             </div>
@@ -152,29 +289,22 @@
             {% else %}
             <!-- User is not authenticated, show authentication prompt -->
             <div class="flex items-center justify-center min-h-[60vh]">
-                <div class="bg-white rounded-3xl card-shadow p-8 max-w-md w-full text-center">
-                    <div class="w-16 h-16 bg-lazr-light-purple rounded-full flex items-center justify-center mx-auto mb-6">
-                        <svg class="w-8 h-8 text-lazr-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
+                <div class="glassmorphism rounded-3xl card-shadow p-8 max-w-md w-full text-center hover-lift fade-in-section">
+                    <div class="w-20 h-20 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <i class="fas fa-lock text-lazr-purple text-2xl"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-lazr-purple mb-4">Sign In Required</h2>
-                    <p class="text-gray-600 mb-6">You need to sign in to view your pending transactions.</p>
+                    <h2 class="text-3xl font-black text-lazr-purple dark:text-white mb-4">Sign In Required</h2>
+                    <p class="text-gray-600 dark:text-gray-300 mb-8">You need to sign in to view your pending transactions.</p>
                     
                     <div class="space-y-4">
-                        <a href="{% url 'home' %}" class="button-gradient text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center w-full">
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                            </svg>
+                        <a href="{% url 'home' %}" class="button-gradient text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center w-full group">
+                            <i class="fab fa-google mr-3 group-hover:scale-110 transition-transform"></i>
                             Sign in with Google
                         </a>
                         
-                        <p class="text-sm text-gray-600">
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
                             Don't have an account? 
-                            <a href="{% url 'home' %}" class="text-lazr-pink hover:underline">Sign Up</a>
+                            <a href="{% url 'home' %}" class="text-lazr-pink hover:underline font-medium">Sign Up</a>
                         </p>
                     </div>
                 </div>
@@ -184,18 +314,18 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-lazr-accent text-white py-8 mt-16">
+    <footer class="bg-lazr-accent dark:bg-dark-bg text-white py-8 mt-16 theme-transition">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p class="text-sm">&copy; 2025 LAZRPAY. Secure crypto transactions made simple.</p>
         </div>
     </footer>
 
     {% if user.is_authenticated %}
-<script>
-  // Store user data in global variables
-  window.userEmail = "{{ user.email }}";
-  window.userId = "{{ user.id }}";
-</script>
+    <script>
+        // Store user data in global variables
+        window.userEmail = "{{ user.email }}";
+        window.userId = "{{ user.id }}";
+    </script>
     <script>
         // Assume window.userEmail is set from the Django template
         const userEmail = window.userEmail;
@@ -214,13 +344,11 @@
                 if (pending.length === 0) {
                     container.innerHTML = `
                         <div class="text-center py-12">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
+                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-inbox text-gray-400 text-2xl"></i>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Pending Transactions</h3>
-                            <p class="text-gray-500">You don't have any pending transactions to claim.</p>
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No Pending Transactions</h3>
+                            <p class="text-gray-500 dark:text-gray-400">You don't have any pending transactions to claim.</p>
                         </div>
                     `;
                     return;
@@ -228,34 +356,32 @@
 
                 pending.forEach(tx => {
                     const div = document.createElement("div");
-                    div.className = "border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow";
+                    div.className = "border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:shadow-md transition-all duration-300 hover:scale-105 bg-white dark:bg-dark-card";
                     div.innerHTML = `
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center space-x-4">
-                                <div class="w-12 h-12 bg-lazr-light-purple rounded-full flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-lazr-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                                    </svg>
+                                <div class="w-12 h-12 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-2xl flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-download text-lazr-purple text-lg"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-lazr-purple">${parseFloat(tx.amount).toFixed(4)} SOL</h3>
-                                    <p class="text-sm text-gray-600">From: ${tx.from_user || 'Unknown'}</p>
+                                    <h3 class="text-lg font-bold text-lazr-purple dark:text-white">${parseFloat(tx.amount).toFixed(4)} SOL</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">From: ${tx.from_user || 'Unknown'}</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                    Pending
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                                    <i class="fas fa-clock mr-1"></i>Pending
                                 </span>
-                                <p class="text-xs text-gray-500 mt-1">${new Date(tx.created_at).toLocaleDateString()}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${new Date(tx.created_at).toLocaleDateString()}</p>
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
-                            <div class="text-sm text-gray-600">
+                            <div class="text-sm text-gray-600 dark:text-gray-300">
                                 <p><strong>Transaction ID:</strong> <span class="font-mono">${tx.tx_hash}</span></p>
                             </div>
                             <a href="/receive/?tx_hash=${tx.tx_hash}" 
-                               class="button-gradient text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-lg hover:scale-105">
-                                Claim Now
+                               class="button-gradient text-white px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center">
+                                <i class="fas fa-download mr-2"></i>Claim Now
                             </a>
                         </div>
                     `;
@@ -265,13 +391,11 @@
                 console.error("Error loading transactions:", error);
                 document.getElementById("transaction-list").innerHTML = `
                     <div class="text-center py-8">
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
+                        <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-red-700 mb-2">Error Loading Transactions</h3>
-                        <p class="text-red-600">Failed to load your transactions. Please try again.</p>
+                        <h3 class="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Error Loading Transactions</h3>
+                        <p class="text-red-600 dark:text-red-400">Failed to load your transactions. Please try again.</p>
                     </div>
                 `;
             }
@@ -284,5 +408,41 @@
         document.getElementById('refresh-btn').addEventListener('click', loadPendingTransactions);
     </script>
     {% endif %}
+
+    <!-- Dark Mode Toggle Script -->
+    <script>
+        // Dark mode toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        html.classList.toggle('dark', currentTheme === 'dark');
+
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in sections
+        document.querySelectorAll('.fade-in-section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
 </body>
 </html>
