@@ -29,6 +29,7 @@ urlpatterns = [
     path("moonpay/webhook/", views.moonpay_webhook, name="moonpay_webhook"),
     path("moonpay/test-webhook/", views.test_moonpay_webhook, name="test_moonpay_webhook"),
     path("moonpay/simulate-deposit/", views.simulate_moonpay_deposit, name="simulate_moonpay_deposit"),
+    path("moonpay/test-notification/", views.test_moonpay_notification, name="test_moonpay_notification"),
 ]
 
 # Compare this snippet from lazr/lazr/urls.py:

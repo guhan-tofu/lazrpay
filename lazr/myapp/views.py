@@ -17,6 +17,7 @@ import json
 from django.http import HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt
 from .models import Transaction
+import time
 
 # Solana imports for actual SOL transfers
 from solana.rpc.api import Client
@@ -27,6 +28,7 @@ from solana.keypair import Keypair
 import base58
 import os
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -107,12 +109,22 @@ def deposit_success_view(request):
     solana_tx_id = request.GET.get('solana_tx_id')
     moonpay_wallet = request.GET.get('moonpay_wallet')
     
+    print(f"Deposit success view - tx_hash: {tx_hash}, solana_tx_id: {solana_tx_id}, moonpay_wallet: {moonpay_wallet}")
+    
     transaction = None
     if tx_hash:
         try:
             transaction = Transaction.objects.get(tx_hash=tx_hash)
+            print(f"Found transaction: {transaction.amount} SOL to {transaction.to_receiver.email}")
         except Transaction.DoesNotExist:
-            pass
+            print(f"Transaction not found for tx_hash: {tx_hash}")
+            # Try to find by the fallback transaction ID
+            try:
+                transaction = Transaction.objects.filter(status='deposit_initiated').first()
+                if transaction:
+                    print(f"Using fallback transaction: {transaction.amount} SOL to {transaction.to_receiver.email}")
+            except:
+                print("No fallback transaction found")
     
     context = {
         'transaction': transaction,
@@ -289,36 +301,35 @@ class SenderIdView(generics.RetrieveAPIView):
 
 @csrf_exempt
 def moonpay_webhook(request):
-    webhook_secret = "wk_test_wi418cZi42L1XErSspSiIuWnQSfutga8"
-    signature = request.headers.get("Moonpay-Signature", "")
-    body = request.body
-
-    # Verify signature
-    expected_signature = hmac.new(
-        webhook_secret.encode(),
-        body,
-        hashlib.sha256
-    ).hexdigest()
-    if not hmac.compare_digest(signature, expected_signature):
-        return HttpResponseForbidden("Invalid signature")
-
-    data = json.loads(body)
-    # Log the payload for debugging
-    print("MoonPay Webhook Payload:", data)
-
-    # Example: data['externalCustomerId'] should match your user/email
-    # Example: data['status'] == 'completed' for successful payout
-    if data.get("status") == "completed":
-        # Try to find the transaction by tx_hash or email
-        tx_hash = data.get("externalTransactionId")
-        if tx_hash:
-            try:
-                txn = Transaction.objects.get(tx_hash=tx_hash)
-                txn.status = "claimed"
-                txn.save()
-            except Transaction.DoesNotExist:
-                pass  # Optionally log this
-    return HttpResponse("OK")
+    """
+    Handle MoonPay webhook when they confirm receipt of SOL
+    """
+    if request.method != 'POST':
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        print(f"MoonPay webhook received: {data}")
+        
+        # Check if this is a deposit confirmation
+        if data.get('type') == 'transaction_updated' and data.get('status') == 'completed':
+            deposit_id = data.get('depositId')
+            
+            if deposit_id:
+                # Find transaction by deposit ID
+                try:
+                    transaction = Transaction.objects.get(tx_hash=deposit_id)
+                    transaction.status = "completed"
+                    transaction.save()
+                    print(f"Transaction {deposit_id} marked as completed")
+                except Transaction.DoesNotExist:
+                    print(f"Transaction not found for deposit ID: {deposit_id}")
+        
+        return JsonResponse({"status": "ok"})
+        
+    except Exception as e:
+        print(f"Webhook error: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 @csrf_exempt
 def test_moonpay_webhook(request):
@@ -337,8 +348,100 @@ def test_moonpay_webhook(request):
 @csrf_exempt
 def simulate_moonpay_deposit(request):
     """
-    Simulate a crypto deposit to MoonPay for sandbox testing.
-    This endpoint is called by the MoonPay widget's onInitiateDeposit handler.
+    Send SOL to MoonPay and wait for confirmation
+    """
+    if request.method != 'POST':
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        moonpay_wallet_address = data.get('moonpayWalletAddress')
+        deposit_id = data.get('moonpayDepositId')
+        crypto_amount = data.get('cryptoAmount')
+        external_transaction_id = data.get('externalTransactionId')
+        
+        print(f"Received MoonPay wallet: {moonpay_wallet_address}")
+        print(f"Received deposit ID: {deposit_id}")
+        print(f"Received crypto amount: {crypto_amount}")
+        print(f"Received external transaction ID: {external_transaction_id}")
+        
+        if not moonpay_wallet_address:
+            return JsonResponse({"error": "Missing MoonPay wallet address"}, status=400)
+        
+        # Find the SPECIFIC transaction by tx_hash, not just any pending transaction
+        if external_transaction_id:
+            try:
+                transaction = Transaction.objects.get(tx_hash=external_transaction_id)
+                print(f"Found specific transaction: {transaction.tx_hash} with status: {transaction.status}")
+            except Transaction.DoesNotExist:
+                return JsonResponse({"error": f"Transaction {external_transaction_id} not found"}, status=404)
+        else:
+            # Fallback to first pending transaction (for backward compatibility)
+            transaction = Transaction.objects.filter(status='pending').first()
+            if not transaction:
+                return JsonResponse({"error": "No pending transactions found"}, status=404)
+            print(f"Using fallback transaction: {transaction.tx_hash}")
+        
+        # Check if transaction has already been claimed
+        if transaction.status != 'pending':
+            return JsonResponse({"error": f"Transaction {transaction.tx_hash} has already been claimed (status: {transaction.status})"}, status=400)
+        
+        # Use the amount from MoonPay if provided, otherwise use transaction amount
+        if crypto_amount:
+            sol_amount = float(crypto_amount)
+        else:
+            sol_amount = float(transaction.amount)
+            
+        print(f"Using transaction: {sol_amount} SOL from transaction {transaction.tx_hash}")
+        
+        # Send SOL to MoonPay's provided wallet address
+        lamports = int(sol_amount * 1_000_000_000)
+        
+        connection = Client("https://api.devnet.solana.com")
+        moonpay_pubkey = PublicKey(moonpay_wallet_address)
+        
+        txn = SolanaTransaction()
+        txn.add(
+            transfer(
+                TransferParams(
+                    from_pubkey=keypair.public_key,
+                    to_pubkey=moonpay_pubkey,
+                    lamports=lamports
+                )
+            )
+        )
+        
+        resp = connection.send_transaction(txn, keypair)
+        print(f"SOL sent to MoonPay wallet {moonpay_wallet_address}: {resp.value}")
+        
+        # Update transaction status to completed so it won't show in pending
+        transaction.status = "completed"
+        transaction.save()
+        
+        print("=== SOL TRANSFER COMPLETE ===");
+        print("✅ SOL sent to MoonPay wallet:", moonpay_wallet_address);
+        print("✅ Solana transaction ID:", str(resp.value));
+        print("✅ Transaction amount:", sol_amount, "SOL");
+        print("✅ Transaction ID:", transaction.tx_hash);
+        print("✅ Transaction status updated to 'completed'");
+        print("✅ MoonPay should detect this automatically");
+        print("=============================");
+        
+        return JsonResponse({
+            "success": True,
+            "message": "SOL sent to MoonPay successfully! MoonPay should detect this automatically.",
+            "solana_tx_id": str(resp.value),
+            "moonpay_wallet": moonpay_wallet_address
+        })
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def test_moonpay_notification(request):
+    """
+    Test endpoint to manually trigger MoonPay notification
     """
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -346,150 +449,50 @@ def simulate_moonpay_deposit(request):
     try:
         data = json.loads(request.body)
         transaction_id = data.get('externalTransactionId')
+        moonpay_wallet_address = data.get('moonpayWalletAddress')
+        solana_tx_id = data.get('solanaTxId')
         
-        if not transaction_id:
-            return JsonResponse({"error": "Missing externalTransactionId"}, status=400)
+        print(f"Testing MoonPay notification:")
+        print(f"Transaction ID: {transaction_id}")
+        print(f"MoonPay wallet: {moonpay_wallet_address}")
+        print(f"Solana TX ID: {solana_tx_id}")
         
-        # Find the transaction in our database
-        try:
-            transaction = Transaction.objects.get(tx_hash=transaction_id)
-        except Transaction.DoesNotExist:
-            return JsonResponse({"error": "Transaction not found"}, status=404)
+        # MoonPay sandbox simulation endpoint
+        simulation_url = "https://api.moonpay.com/v3/simulate/sell_transaction"
         
-        # Check if we should use local simulation mode (for testing)
-        use_local_simulation = request.GET.get('local', 'false').lower() == 'true'
+        # Your MoonPay secret key for API calls
+        secret_key = "sk_test_bSuZag7HAnqGTJwEh4473JdxVMYpLoI0"
         
-        if use_local_simulation:
-            # Local simulation mode - no API call needed
-            transaction.status = "deposit_initiated"
-            transaction.save()
-            
-            return JsonResponse({
-                "success": True,
-                "message": "Deposit simulation successful (local mode)",
-                "transaction_id": transaction_id,
-                "note": "Local simulation mode - no MoonPay API call made"
-            })
+        # Prepare the simulation request
+        simulation_data = {
+            "externalTransactionId": transaction_id,
+            "cryptoAmount": "0.1",  # Default amount for testing
+            "cryptoCurrencyCode": "sol",
+            "walletAddress": moonpay_wallet_address,
+            "transactionId": solana_tx_id
+        }
         
-        # ACTUAL SOL TRANSFER TO MOONPAY WALLET
-        # This is where we actually send the SOL to MoonPay's wallet
-        try:
-            # Get the MoonPay wallet address from the frontend request
-            moonpay_wallet_address = data.get('moonpayWalletAddress')
-            
-            if not moonpay_wallet_address:
-                return JsonResponse({
-                    "error": "Missing MoonPay wallet address",
-                    "details": "Please provide the current MoonPay wallet address"
-                }, status=400)
-            
-            print(f"Using MoonPay wallet address from frontend: {moonpay_wallet_address}")
-            
-            # Get the amount to transfer
-            sol_amount = float(transaction.amount)
-            lamports = int(sol_amount * 1_000_000_000)
-            
-            print(f"Transferring {sol_amount} SOL ({lamports} lamports) to MoonPay wallet: {moonpay_wallet_address}")
-            
-            # Setup Solana connection
-            connection = Client("https://api.devnet.solana.com")
-            
-            # Use the existing keypair (your system wallet that holds the SOL)
-            # The keypair is already set up at the top of the file
-            
-            # MoonPay's wallet public key
-            moonpay_pubkey = PublicKey(moonpay_wallet_address)
-            
-            # Create and send the transaction
-            txn = SolanaTransaction()
-            txn.add(
-                transfer(
-                    TransferParams(
-                        from_pubkey=keypair.public_key,
-                        to_pubkey=moonpay_pubkey,
-                        lamports=lamports
-                    )
-                )
-            )
-            
-            print("Sending SOL to MoonPay wallet...")
-            resp = connection.send_transaction(txn, keypair)
-            print(f"SOL transfer successful! Transaction ID: {resp.value}")
-            
-            # Update transaction status
-            transaction.status = "deposit_initiated"
-            transaction.save()
-            
-            # Now call MoonPay's API to notify them of the deposit
-            import requests
-            
-            # MoonPay sandbox simulation endpoint
-            simulation_url = "https://api.moonpay.com/v3/simulate/sell_transaction"
-            
-            # Your MoonPay secret key for API calls
-            secret_key = "sk_test_bSuZag7HAnqGTJwEh4473JdxVMYpLoI0"
-            
-            # Prepare the simulation request
-            simulation_data = {
-                "externalTransactionId": transaction_id,
-                "cryptoAmount": str(transaction.amount),
-                "cryptoCurrencyCode": "sol",
-                "walletAddress": moonpay_wallet_address,
-                "transactionId": str(resp.value)  # The actual Solana transaction ID
-            }
-            
-            # Make the API call to MoonPay
-            headers = {
-                "Authorization": f"Bearer {secret_key}",
-                "Content-Type": "application/json"
-            }
-            
-            try:
-                print(f"Notifying MoonPay of deposit...")
-                response = requests.post(simulation_url, json=simulation_data, headers=headers, timeout=30)
-                
-                print(f"MoonPay API Response: {response.status_code} - {response.text}")
-                
-                if response.status_code == 200:
-                    return JsonResponse({
-                        "success": True,
-                        "message": "SOL transferred to MoonPay successfully!",
-                        "transaction_id": transaction_id,
-                        "solana_tx_id": str(resp.value),
-                        "moonpay_wallet": moonpay_wallet_address,
-                        "moonpay_response": response.json()
-                    })
-                else:
-                    # SOL was transferred but MoonPay API failed
-                    return JsonResponse({
-                        "success": True,
-                        "message": "SOL transferred to MoonPay, but notification failed",
-                        "transaction_id": transaction_id,
-                        "solana_tx_id": str(resp.value),
-                        "moonpay_wallet": moonpay_wallet_address,
-                        "moonpay_error": response.text
-                    })
-                    
-            except requests.exceptions.RequestException as e:
-                # SOL was transferred but MoonPay API call failed
-                return JsonResponse({
-                    "success": True,
-                    "message": "SOL transferred to MoonPay, but notification failed",
-                    "transaction_id": transaction_id,
-                    "solana_tx_id": str(resp.value),
-                    "moonpay_wallet": moonpay_wallet_address,
-                    "moonpay_error": str(e)
-                })
-                
-        except Exception as e:
-            print(f"Error transferring SOL to MoonPay: {e}")
-            return JsonResponse({
-                "error": "Failed to transfer SOL to MoonPay",
-                "details": str(e)
-            }, status=500)
-            
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
+        # Make the API call to MoonPay
+        headers = {
+            "Authorization": f"Bearer {secret_key}",
+            "Content-Type": "application/json"
+        }
+        
+        print(f"Making API call to MoonPay...")
+        response = requests.post(simulation_url, json=simulation_data, headers=headers, timeout=30)
+        
+        print(f"MoonPay API Response: {response.status_code} - {response.text}")
+        
+        return JsonResponse({
+            "success": response.status_code == 200,
+            "status_code": response.status_code,
+            "response": response.text,
+            "request_data": simulation_data
+        })
+        
     except Exception as e:
-        print(f"Unexpected error in simulate_moonpay_deposit: {e}")
-        return JsonResponse({"error": str(e)}, status=500)
+        print(f"Error in test notification: {str(e)}")
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=500)

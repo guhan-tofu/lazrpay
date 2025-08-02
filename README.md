@@ -1,4 +1,4 @@
-# LAZR PAY--newnew
+# LAZR PAY--final
 
 ##  A Simpul Payment System Made in Solana
 

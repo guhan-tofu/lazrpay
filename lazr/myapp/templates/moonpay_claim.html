@@ -44,14 +44,6 @@
                     </div>
                     <span class="text-2xl font-bold text-lazr-purple">LAZRPAY</span>
                 </div>
-                <!-- Mobile menu button -->
-                <div class="md:hidden">
-                    <button class="text-gray-600 hover:text-lazr-pink transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
             </div>
         </div>
     </header>
@@ -109,7 +101,7 @@
                 </div>
             </div>
 
-            <!-- MoonPay Integration Placeholder -->
+            <!-- MoonPay Integration -->
             <div class="bg-white rounded-3xl card-shadow p-8 max-w-2xl mx-auto">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-lazr-purple mb-4">Complete Your Claim</h2>
@@ -139,266 +131,156 @@
         </div>
     </footer>
 
+    <!-- MoonPay SDK -->
+    <script src="https://static.moonpay.com/web-sdk/v1/moonpay-web-sdk.min.js"></script>
+    
     <script>
-      document.getElementById("start-bank-transfer").addEventListener("click", function () {
-        // Get amount, recipient, and transaction hash from Django template variables
-        var amount = "{% if transaction %}{{ transaction.amount|floatformat:'-3' }}{% else %}0{% endif %}";
-        var email = "{% if transaction %}{{ transaction.to_receiver.email }}{% else %}''{% endif %}";
-        var txHash = "{% if transaction %}{{ transaction.tx_hash }}{% else %}''{% endif %}";
+        document.getElementById("start-bank-transfer").addEventListener("click", function () {
+            // Get transaction details
+            var amount = "{% if transaction %}{{ transaction.amount }}{% else %}0{% endif %}";
+            var email = "{% if transaction %}{{ transaction.to_receiver.email }}{% else %}''{% endif %}";
+            var txHash = "{% if transaction %}{{ transaction.tx_hash }}{% else %}''{% endif %}";
 
-        // Remove any existing widget
-        var existing = document.getElementById('moonpay-widget-container');
-        if (existing) existing.remove();
+            console.log("Starting MoonPay transaction:", { amount, email, txHash });
 
-        // Create container for the widget
-        var container = document.getElementById('status');
-        container.innerHTML = '<div id="moonpay-widget-container" style="margin-top: 32px;"></div>';
-
-        // Show loading message
-        var statusDiv = document.getElementById('status');
-        statusDiv.innerHTML += '<div class="mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">Loading MoonPay widget...</div>';
-
-        // Try multiple CDN sources for MoonPay SDK
-        var moonpayScripts = [
-          'https://unpkg.com/@moonpay/moonpay-js@1.7.1/dist/umd/index.js',
-          'https://cdn.jsdelivr.net/npm/@moonpay/moonpay-js@1.7.1/dist/umd/index.js',
-          'https://unpkg.com/@moonpay/moonpay-js@latest/dist/umd/index.js'
-        ];
-
-        function tryLoadMoonPay(scriptIndex) {
-          if (scriptIndex >= moonpayScripts.length) {
-            // All scripts failed, fallback to iframe approach
-            console.log('All MoonPay SDK sources failed, using iframe fallback');
-            useIframeFallback();
-            return;
-          }
-
-          var script = document.createElement('script');
-          script.src = moonpayScripts[scriptIndex];
-          script.onload = function() {
-            console.log('MoonPay SDK loaded from:', moonpayScripts[scriptIndex]);
-            initializeMoonPayWidget();
-          };
-          script.onerror = function() {
-            console.log('Failed to load from:', moonpayScripts[scriptIndex]);
-            tryLoadMoonPay(scriptIndex + 1);
-          };
-          document.head.appendChild(script);
-        }
-
-        function initializeMoonPayWidget() {
-          // Check if MoonPay is available
-          if (typeof window.MoonPay !== 'undefined') {
-            try {
-              var moonpaySell = new window.MoonPay({
-                variant: 'embedded',
-                apiKey: 'pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz',
-                environment: 'sandbox',
-                walletAddress: '0x94c12bce9669b481a8c64a66fa58779b31a00f7c74e24455b6ac46fad01de3f6',
-                baseCurrencyCode: 'sol',
-                baseCurrencyAmount: amount,
-                defaultCurrencyCode: 'inr',
-                externalCustomerId: email,
-                externalTransactionId: txHash,
-                theme: 'dark',
-                onInitiateDeposit: function(depositDetails) {
-                  console.log('Initiate deposit with:', depositDetails);
-                  
-                  // Call our backend to transfer SOL to MoonPay with the address from deposit details
-                  fetch('/moonpay/simulate-deposit/', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                      externalTransactionId: depositDetails.externalTransactionId,
-                      cryptoAddress: depositDetails.cryptoAddress,
-                      cryptoAmount: depositDetails.cryptoAmount,
-                      moonpayWalletAddress: depositDetails.cryptoAddress
-                    })
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                    console.log('Deposit simulation response:', data);
-                    if (data.success) {
-                      var statusDiv = document.getElementById('status');
-                      statusDiv.innerHTML += '<div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">Deposit initiated successfully! MoonPay will process your transaction.</div>';
-                      
-                      // Redirect to success page after 2 seconds
-                      setTimeout(function() {
-                        var successUrl = '/deposit-success/?tx_hash=' + encodeURIComponent(depositDetails.externalTransactionId) + 
-                                        '&solana_tx_id=' + encodeURIComponent(data.solana_tx_id || '') + 
-                                        '&moonpay_wallet=' + encodeURIComponent(data.moonpay_wallet || '');
-                        window.location.href = successUrl;
-                      }, 2000);
-                    } else {
-                      var statusDiv = document.getElementById('status');
-                      statusDiv.innerHTML += '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: ' + (data.error || 'Unknown error') + '</div>';
-                    }
-                  })
-                  .catch(error => {
-                    console.error('Error simulating deposit:', error);
-                    var statusDiv = document.getElementById('status');
-                    statusDiv.innerHTML += '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error simulating deposit. Please try again.</div>';
-                  });
-                },
-                onTransactionCompleted: function(transaction) {
-                  console.log('Transaction completed:', transaction);
-                  var statusDiv = document.getElementById('status');
-                  statusDiv.innerHTML += '<div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">Transaction completed! Your INR will be deposited to your bank account.</div>';
-                }
-              });
-
-              // Mount the widget
-              moonpaySell.mount('#moonpay-widget-container');
-              
-              // Remove loading message
-              var loadingMsg = statusDiv.querySelector('.bg-blue-100');
-              if (loadingMsg) loadingMsg.remove();
-              
-            } catch (error) {
-              console.error('Error initializing MoonPay widget:', error);
-              useIframeFallback();
-            }
-          } else {
-            console.error('MoonPay SDK not available');
-            useIframeFallback();
-          }
-        }
-
-        function useIframeFallback() {
-          console.log('Using iframe fallback for MoonPay');
-          
-          // Remove loading message
-          var statusDiv = document.getElementById('status');
-          var loadingMsg = statusDiv.querySelector('.bg-blue-100');
-          if (loadingMsg) loadingMsg.remove();
-          
-          // Build the MoonPay URL
-          var moonpayUrl = "https://sell-sandbox.moonpay.com/?apiKey=pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz"
-            + "&baseCurrencyCode=sol"
-            + "&baseCurrencyAmount=" + encodeURIComponent(amount)
-            + "&defaultCurrencyCode=inr"
-            + "&externalCustomerId=" + encodeURIComponent(email)
-            + "&email=" + encodeURIComponent(email)
-            + "&externalTransactionId=" + encodeURIComponent(txHash)
-            + "&theme=dark";
-
-          // Create the iframe
-          var iframe = document.createElement('iframe');
-          iframe.id = 'moonpay-iframe';
-          iframe.src = moonpayUrl;
-          iframe.style.width = '100%';
-          iframe.style.height = '700px';
-          iframe.style.border = 'none';
-          iframe.style.borderRadius = '16px';
-          iframe.style.marginTop = '32px';
-
-          // Insert the iframe
-          var container = document.getElementById('moonpay-widget-container');
-          container.innerHTML = '';
-          container.appendChild(iframe);
-
-          // Add note and manual simulation button for iframe mode
-          statusDiv.innerHTML += '<div class="mt-4 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">' +
-            '<p><strong>Note:</strong> Using iframe mode. When you see "Waiting for deposit" in the widget above, click the button below to transfer the stored SOL to MoonPay.</p>' +
-            '<p class="text-sm mt-2">This will actually send the SOL from your system wallet to MoonPay\'s wallet for off-ramping.</p>' +
-            '<button id="manual-deposit-sim" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Transfer SOL to MoonPay</button>' +
-            '</div>';
-
-          // Add manual deposit simulation
-          document.getElementById('manual-deposit-sim').addEventListener('click', function() {
-            simulateDepositManually();
-          });
-        }
-
-        function simulateDepositManually() {
-          var statusDiv = document.getElementById('status');
-          statusDiv.innerHTML += '<div class="mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">Transferring SOL to MoonPay...</div>';
-
-          // Get the current MoonPay wallet address from the iframe
-          // We need to extract it from the MoonPay widget
-          var moonpayIframe = document.getElementById('moonpay-iframe');
-          var currentMoonpayAddress = '';
-          
-          // Try to get the address from the iframe URL or content
-          if (moonpayIframe) {
-            try {
-              // The address might be in the iframe URL or we need to extract it from the widget
-              // For now, let's prompt the user to enter it manually
-              currentMoonpayAddress = prompt("Please enter the MoonPay wallet address shown in the widget above:");
-              if (!currentMoonpayAddress) {
-                statusDiv.innerHTML += '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: Please enter the MoonPay wallet address.</div>';
-                return;
-              }
-            } catch (e) {
-              console.error('Error getting MoonPay address:', e);
-            }
-          }
-
-          // Call our backend to transfer SOL to MoonPay with the current address
-          fetch('/moonpay/simulate-deposit/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-              externalTransactionId: txHash,
-              cryptoAmount: amount,
-              moonpayWalletAddress: currentMoonpayAddress
-            })
-          })
-          .then(response => response.json())
-          .then(data => {
-            console.log('SOL transfer response:', data);
-            if (data.success) {
-              var statusDiv = document.getElementById('status');
-              var message = 'SOL transferred successfully! Transaction ID: ' + (data.solana_tx_id || 'N/A');
-              if (data.moonpay_wallet) {
-                message += '<br>Sent to MoonPay wallet: ' + data.moonpay_wallet;
-              }
-              statusDiv.innerHTML += '<div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">' + message + '</div>';
-              
-              // Redirect to success page after 2 seconds
-              setTimeout(function() {
-                var successUrl = '/deposit-success/?tx_hash=' + encodeURIComponent(txHash) + 
-                                '&solana_tx_id=' + encodeURIComponent(data.solana_tx_id || '') + 
-                                '&moonpay_wallet=' + encodeURIComponent(data.moonpay_wallet || '');
-                window.location.href = successUrl;
-              }, 2000);
-            } else {
-              var statusDiv = document.getElementById('status');
-              statusDiv.innerHTML += '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: ' + (data.error || 'Unknown error') + '</div>';
-            }
-          })
-          .catch(error => {
-            console.error('Error transferring SOL:', error);
+            // Show loading
             var statusDiv = document.getElementById('status');
-            statusDiv.innerHTML += '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error transferring SOL. Please try again.</div>';
-          });
-        }
+            statusDiv.innerHTML = '<div class="mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">Loading MoonPay widget...</div>';
+
+            // Initialize MoonPay SDK
+            if (typeof window.MoonPayWebSdk !== 'undefined') {
+                try {
+                    const moonPay = window.MoonPayWebSdk.init;
+                    
+                    const widget = moonPay({
+                        flow: "sell",
+                        environment: "sandbox",
+                        params: {
+                            apiKey: "pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz",
+                            baseCurrencyCode: "sol",
+                            baseCurrencyAmount: amount,
+                            defaultCurrencyCode: "inr",
+                            externalTransactionId: txHash,
+                            email: email,
+                            externalCustomerId: email,
+                            lockAmount: true  // Lock the amount so it doesn't change
+                        },
+                        variant: "overlay",
+                        useWarnBeforeRefresh: false,
+                        handlers: {
+                            onInitiateDeposit: function(depositDetails) {
+                                console.log("=== MOONPAY DEPOSIT DETAILS ===");
+                                console.log("Full depositDetails:", depositDetails);
+                                console.log("depositWalletAddress:", depositDetails.depositWalletAddress);
+                                console.log("cryptoAddress:", depositDetails.cryptoAddress);
+                                console.log("depositId:", depositDetails.depositId);
+                                console.log("externalTransactionId:", depositDetails.externalTransactionId);
+                                console.log("cryptoCurrencyAmount:", depositDetails.cryptoCurrencyAmount);
+                                console.log("==================================");
+                                
+                                // Get the wallet address from MoonPay
+                                var walletAddress = depositDetails.depositWalletAddress || depositDetails.cryptoAddress;
+                                var depositId = depositDetails.depositId || "deposit-" + Date.now();
+                                var cryptoAmount = depositDetails.cryptoCurrencyAmount || amount;
+                                
+                                console.log("Selected wallet address:", walletAddress);
+                                console.log("Selected deposit ID:", depositId);
+                                console.log("Crypto amount:", cryptoAmount);
+                                
+                                if (!walletAddress) {
+                                    console.error("No wallet address provided by MoonPay");
+                                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: Could not get wallet address from MoonPay</div>';
+                                    return {
+                                        depositId: depositId
+                                    };
+                                }
+                                
+                                // Send SOL to MoonPay's wallet address
+                                fetch('/moonpay/simulate-deposit/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': getCookie('csrftoken')
+                                    },
+                                    body: JSON.stringify({
+                                        moonpayWalletAddress: walletAddress,
+                                        moonpayDepositId: depositId,
+                                        externalTransactionId: txHash,  // Pass the specific transaction ID
+                                        cryptoAmount: cryptoAmount
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('SOL transfer response:', data);
+                                    if (data.success) {
+                                        statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">SOL transferred successfully! Transaction ID: ' + (data.solana_tx_id || 'N/A') + '<br>Sent to: ' + walletAddress + '<br>Amount: ' + cryptoAmount + ' SOL</div>';
+                                        
+                                        // Disable the button to prevent multiple claims
+                                        document.getElementById('start-bank-transfer').disabled = true;
+                                        document.getElementById('start-bank-transfer').innerHTML = 'Transaction Completed';
+                                        
+                                        // Redirect to success page
+                                        setTimeout(function() {
+                                            var successUrl = '/deposit-success/?tx_hash=' + encodeURIComponent(txHash) + 
+                                                            '&solana_tx_id=' + encodeURIComponent(data.solana_tx_id || '') + 
+                                                            '&moonpay_wallet=' + encodeURIComponent(walletAddress);
+                                            window.location.href = successUrl;
+                                        }, 3000);
+                                    } else {
+                                        statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: ' + (data.error || 'Unknown error') + '</div>';
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Error: ' + error.message + '</div>';
+                                });
+                                
+                                return {
+                                    depositId: depositId
+                                };
+                            },
+                            onTransactionCompleted: function(transaction) {
+                                console.log("Transaction completed:", transaction);
+                                statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">Transaction completed! Your INR will be deposited to your bank account.</div>';
+                            },
+                            onCloseOverlay: function() {
+                                console.log("Widget closed");
+                            }
+                        }
+                    });
+
+                    // Show the widget
+                    widget.show();
+                    
+                    // Remove loading message
+                    var loadingMsg = statusDiv.querySelector('.bg-blue-100');
+                    if (loadingMsg) loadingMsg.remove();
+                    
+                } catch (error) {
+                    console.error("Error initializing MoonPay widget:", error);
+                    statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">Failed to initialize MoonPay widget. Please refresh and try again.</div>';
+                }
+            } else {
+                console.error("MoonPay SDK not available");
+                statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">MoonPay SDK failed to load. Please refresh and try again.</div>';
+            }
+        });
 
         // Helper function to get CSRF token
         function getCookie(name) {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-              }
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
-          }
-          return cookieValue;
+            return cookieValue;
         }
-
-        // Start loading MoonPay SDK
-        tryLoadMoonPay(0);
-      });
     </script>
 </body>
 </html> 
