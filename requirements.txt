@@ -1,3 +1,4 @@
 django
 solana==0.28
 solders
+newnewnew

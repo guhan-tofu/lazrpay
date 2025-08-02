@@ -1,6 +1,6 @@
-# LAZR PAY
+# LAZR PAY--newnew
 
-##  A Simpel Payment System Made in Solana
+##  A Simpul Payment System Made in Solana
 
 
 ![Just Gonna Send It](https://media1.tenor.com/m/kqi8vJhT8PoAAAAC/larry-enticer.gif)

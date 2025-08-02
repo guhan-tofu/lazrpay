@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Successful - LAZRPAY</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lazr-purple': '#6366f1',
+                        'lazr-pink': '#ec4899',
+                        'lazr-accent': '#1e293b'
+                    },
+                    boxShadow: {
+                        'card': '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .button-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-r from-lazr-purple to-lazr-pink rounded-lg flex items-center justify-center mr-3">
+                        <span class="text-white font-bold text-lg">L</span>
+                    </div>
+                    <span class="text-2xl font-bold text-lazr-purple">LAZRPAY</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 py-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Success Header -->
+            <div class="text-center mb-12">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h1 class="text-4xl font-bold text-green-600 mb-4">Deposit Successful!</h1>
+                <p class="text-xl text-gray-600">
+                    Your SOL has been successfully transferred to MoonPay for processing.
+                </p>
+            </div>
+
+            <!-- Transaction Details Card -->
+            <div class="bg-white rounded-3xl card-shadow p-8 max-w-2xl mx-auto mb-8">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-lazr-purple mb-6">Transaction Summary</h2>
+                    <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                        <div class="grid grid-cols-1 gap-4 text-left">
+                            <div>
+                                <p class="text-sm text-gray-600">Amount Transferred</p>
+                                <p class="text-lg font-semibold text-lazr-purple">
+                                    {% if transaction %}{{ transaction.amount }} SOL{% else %}N/A{% endif %}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Recipient</p>
+                                <p class="text-lg font-semibold text-lazr-purple">
+                                    {% if transaction %}{{ transaction.to_receiver.email }}{% else %}N/A{% endif %}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Solana Transaction ID</p>
+                                <p class="text-sm font-mono text-gray-800 break-all">
+                                    {% if solana_tx_id %}{{ solana_tx_id }}{% else %}N/A{% endif %}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">MoonPay Wallet</p>
+                                <p class="text-sm font-mono text-gray-800 break-all">
+                                    {% if moonpay_wallet %}{{ moonpay_wallet }}{% else %}N/A{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-green-800">
+                                <strong>Status:</strong> SOL successfully transferred to MoonPay. Your INR will be deposited to your bank account shortly.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="bg-white rounded-3xl card-shadow p-8 max-w-2xl mx-auto">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-lazr-purple mb-6">What's Next?</h2>
+                    <p class="text-gray-600 mb-8">
+                        MoonPay is now processing your transaction. You will receive your INR in your bank account within 1-3 business days.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/receive_main/" 
+                           class="button-gradient text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105">
+                            Return to Receive Page
+                        </a>
+                        <a href="/" 
+                           class="bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-semibold transition-all duration-200 hover:bg-gray-200">
+                            Go to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-lazr-accent text-white py-8 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">&copy; 2025 LAZRPAY. Secure crypto transactions made simple.</p>
+        </div>
+    </footer>
+</body>
+</html> 
