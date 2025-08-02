@@ -40,8 +40,6 @@ private_key_bytes = base58.b58decode(PRIVATE_KEY_BASE58)
 
 # Create a Keypair from the private key bytes
 keypair = Keypair.from_secret_key(private_key_bytes)
-print("Keypair : ", keypair.public_key)
-
 
 # Create your views here.
 def my_view(request):
@@ -109,22 +107,16 @@ def deposit_success_view(request):
     solana_tx_id = request.GET.get('solana_tx_id')
     moonpay_wallet = request.GET.get('moonpay_wallet')
     
-    print(f"Deposit success view - tx_hash: {tx_hash}, solana_tx_id: {solana_tx_id}, moonpay_wallet: {moonpay_wallet}")
-    
     transaction = None
     if tx_hash:
         try:
             transaction = Transaction.objects.get(tx_hash=tx_hash)
-            print(f"Found transaction: {transaction.amount} SOL to {transaction.to_receiver.email}")
         except Transaction.DoesNotExist:
-            print(f"Transaction not found for tx_hash: {tx_hash}")
             # Try to find by the fallback transaction ID
             try:
                 transaction = Transaction.objects.filter(status='deposit_initiated').first()
-                if transaction:
-                    print(f"Using fallback transaction: {transaction.amount} SOL to {transaction.to_receiver.email}")
             except:
-                print("No fallback transaction found")
+                pass
     
     context = {
         'transaction': transaction,
@@ -169,8 +161,6 @@ private_key_bytes = base58.b58decode(PRIVATE_KEY_BASE58)
 
 # Create a Keypair from the private key bytes
 keypair = Keypair.from_secret_key(private_key_bytes)
-print("Keypair : ", keypair.public_key)
-
 
 @csrf_exempt
 def send_sol(request):
@@ -178,17 +168,12 @@ def send_sol(request):
         return JsonResponse({'error': 'Only POST allowed'}, status=405)
 
     try:
-        print("Request received...")
         data = json.loads(request.body)
         amount = float(data.get('amount', 0))
         recipient_address = data.get('recipient', '')
         tx_hash = data.get('tx_hash', '')
 
-        print(f"Amount: {amount}, Recipient: {recipient_address}, Tx Hash: {tx_hash}")
-
-        
         lamports = int(amount * 1_000_000_000)
-        print(f"Lamports: {lamports}")
         
         connection = Client("https://api.devnet.solana.com")
         to_pubkey = PublicKey(recipient_address)
@@ -204,14 +189,11 @@ def send_sol(request):
             )
         )
 
-        print("Sending transaction...")
         resp = connection.send_transaction(txn, keypair)
-        print("Response:", resp)
 
         return JsonResponse({'txid': str(resp.value)})
     
     except Exception as e:
-        print("Error occurred:", e)
         return JsonResponse({'error': str(e)}, status=500)
 
 

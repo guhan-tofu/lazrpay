@@ -279,7 +279,7 @@
             var email = "{% if transaction %}{{ transaction.to_receiver.email }}{% else %}''{% endif %}";
             var txHash = "{% if transaction %}{{ transaction.tx_hash }}{% else %}''{% endif %}";
 
-            console.log("Starting MoonPay transaction:", { amount, email, txHash });
+
             
             // Show loading
             var statusDiv = document.getElementById('status');
@@ -307,26 +307,12 @@
                         useWarnBeforeRefresh: false,
                         handlers: {
                             onInitiateDeposit: function(depositDetails) {
-                                console.log("=== MOONPAY DEPOSIT DETAILS ===");
-                                console.log("Full depositDetails:", depositDetails);
-                                console.log("depositWalletAddress:", depositDetails.depositWalletAddress);
-                                console.log("cryptoAddress:", depositDetails.cryptoAddress);
-                                console.log("depositId:", depositDetails.depositId);
-                                console.log("externalTransactionId:", depositDetails.externalTransactionId);
-                                console.log("cryptoCurrencyAmount:", depositDetails.cryptoCurrencyAmount);
-                                console.log("==================================");
-                                
                                 // Get the wallet address from MoonPay
                                 var walletAddress = depositDetails.depositWalletAddress || depositDetails.cryptoAddress;
                                 var depositId = depositDetails.depositId || "deposit-" + Date.now();
                                 var cryptoAmount = depositDetails.cryptoCurrencyAmount || amount;
                                 
-                                console.log("Selected wallet address:", walletAddress);
-                                console.log("Selected deposit ID:", depositId);
-                                console.log("Crypto amount:", cryptoAmount);
-                                
                                 if (!walletAddress) {
-                                    console.error("No wallet address provided by MoonPay");
                                     statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Error: Could not get wallet address from MoonPay</div>';
                                     return {
                                         depositId: depositId
@@ -349,7 +335,6 @@
                                 })
                                 .then(response => response.json())
                                 .then(data => {
-                                    console.log('SOL transfer response:', data);
                                     if (data.success) {
                                         statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl">SOL transferred successfully! Transaction ID: ' + (data.solana_tx_id || 'N/A') + '<br>Sent to: ' + walletAddress + '<br>Amount: ' + cryptoAmount + ' SOL</div>';
 
@@ -369,7 +354,6 @@
                                     }
                                 })
                                 .catch(error => {
-                                    console.error('Error:', error);
                                     statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Error: ' + error.message + '</div>';
                                 });
                                 
@@ -378,11 +362,9 @@
                                 };
                             },
                             onTransactionCompleted: function(transaction) {
-                                console.log("Transaction completed:", transaction);
                                 statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl">Transaction completed! Your INR will be deposited to your bank account.</div>';
                             },
                             onCloseOverlay: function() {
-                                console.log("Widget closed");
                             }
                         }
                     });
@@ -395,7 +377,6 @@
                     if (loadingMsg) loadingMsg.remove();
                     
                 } catch (error) {
-                    console.error("Error initializing MoonPay widget:", error);
                     statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Failed to initialize MoonPay widget. Please refresh and try again.</div>';
                 }
             } else {

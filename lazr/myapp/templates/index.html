@@ -357,12 +357,10 @@
         // Access user data from window object
         const userEmail = window.userEmail;
         const userId = window.userId;
-        // console.log("User ID:", userId);
         const sendButton = document.getElementById('sendButton');
         const walletAddressEl = document.getElementById('walletAddress');
         const toInput = document.getElementById('to');
         const amountInput = document.getElementById('amount');
-        console.log("Amount input:", parseFloat(amountInput.value));
 
         function getProvider() {
             return window?.phantom?.solana || window?.solana || null;
@@ -393,15 +391,13 @@
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    if (response.status === 400 && errorText.includes("already exists")) {
-                        console.log("Recipient already exists, continuing.");
-                        return;
-                    }
+                                    if (response.status === 400 && errorText.includes("already exists")) {
+                    return;
+                }
                     throw new Error(errorText);
                 }
 
                 const result = await response.json();
-                console.log("Recipient created:", result);
             } catch (err) {
                 console.warn("Recipient creation skipped or failed:", err.message);
             }
@@ -424,7 +420,7 @@
                     throw new Error("Failed to update wallet address");
                 }
                 
-                console.log("Wallet address updated successfully");
+
             } catch (error) {
                 console.error("Error updating wallet address:", error);
             }
@@ -491,14 +487,12 @@
 
                 // Get sender ID directly from user ID instead of looking up by wallet address
                 const senderId = await getSenderIdByUserId(userId);
-                console.log(`Sender ID: ${senderId}`);
 
                 const recipientRes = await fetch(`http://127.0.0.1:8000/recipient/by_email/${to}/`);
                 const recipientData = await recipientRes.json();
                 const recipientId = recipientData.recipient_id;
 
                 const amountinSol = parseFloat(amountInput.value);
-                console.log('DEBUG: Creating transaction with amount:', amountinSol, 'and tx_hash:', signature.signature);
                 await fetch("http://127.0.0.1:8000/transaction/create/", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" , "X-CSRFToken": getCsrfToken()  },
@@ -510,7 +504,7 @@
                     }),
                 });
 
-                console.log("Transaction record created successfully.");
+
                 await fetch("http://127.0.0.1:8000/email/send/", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -520,7 +514,7 @@
                 document.getElementById('status').innerHTML = `
                     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
                         <strong>Success!</strong> Transaction sent. Hash: ${signature.signature}<br>
-                        <a href="/moonpay-claim/?tx_hash=${signature.signature}" class="underline text-blue-600">Claim your SOL here</a>
+                        <p class="text-sm mt-2">The recipient will receive an email with a secure link to claim the SOL.</p>
                     </div>
                 `;
                 // Optionally, redirect automatically:
