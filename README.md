@@ -505,14 +505,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Django Community**: For the excellent web framework
 - **Tailwind CSS**: For the utility-first CSS framework
 
-## 📞 Support
-
-For support and questions:
-- **Email**: [your-email@domain.com]
-- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
-- **Documentation**: [Project Wiki](https://github.com/your-repo/wiki)
-
----
-
-**🚀 Ready to revolutionize payments with Solana!**
 
