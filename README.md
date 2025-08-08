@@ -1,4 +1,4 @@
-# 🚀 LAZRPAY (updated)
+# 🚀 LAZRPAY (updated-8/8/24)
 
 > **A Modern, Decentralized Payment Platform Built on Solana Blockchain**
 
@@ -178,7 +178,7 @@ PRIVATE_KEY_BASE58=your-solana-private-key-base58
 SOLANA_NETWORK=devnet
 
 # MoonPay Configuration
-MOONPAY_API_KEY=pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz
+MOONPAY_API_KEY=pk_test_your_public_key
 MOONPAY_SECRET_KEY=your-moonpay-secret-key
 MOONPAY_WEBHOOK_SECRET=your-webhook-secret
 
@@ -208,12 +208,41 @@ Visit `http://127.0.0.1:8000` to access the application.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `SECRET_KEY` | Django secret key | `django-insecure-...` |
+| `DJANGO_SECRET_KEY` | Django secret key (preferred) | `django-insecure-...` |
+| `SECRET_KEY` | Django secret key (fallback) | `django-insecure-...` |
 | `PRIVATE_KEY_BASE58` | Solana wallet private key | `4xQy...` |
 | `MOONPAY_API_KEY` | MoonPay public API key | `pk_test_...` |
-| `MOONPAY_SECRET_KEY` | MoonPay secret key | `sk_test_...` |
+| `MOONPAY_SECRET_KEY` | MoonPay secret key (server-to-server) | `sk_test_...` |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | `123456789.apps.googleusercontent.com` |
-| `EMAIL_HOST_USER` | Email service username | `your-email@gmail.com` |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | `xxxxx` |
+| `GMAIL_ADDRESS` | Gmail address used to send emails | `lazrpay@gmail.com` |
+| `GMAIL_APP_PASSWORD` | Gmail app password | `abcd efgh ijkl mnop` |
+
+> Note: `DJANGO_SECRET_KEY` takes precedence if both are set. If neither is set, a development-only fallback is used.
+
+### .env example (place in `lazr/lazr/.env`)
+
+```env
+# Django
+DJANGO_SECRET_KEY=your-django-secret-key
+SECRET_KEY=your-django-secret-key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Email (used by utils.py)
+GMAIL_ADDRESS=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-gmail-app-password
+
+# Solana
+PRIVATE_KEY_BASE58=your-solana-private-key-base58
+SOLANA_NETWORK=devnet
+
+# MoonPay
+MOONPAY_API_KEY=pk_test_your_public_key
+MOONPAY_SECRET_KEY=sk_test_your_secret_key
+```
+
+> For receipt links to work, ensure `MOONPAY_SECRET_KEY` is set for the same MoonPay project where the transaction was created (sandbox vs. production).
 
 ### Solana Network Configuration
 
@@ -279,6 +308,10 @@ Visit `http://127.0.0.1:8000` to access the application.
 | `GET` | `/recipients/` | List all recipients |
 | `POST` | `/transaction/create/` | Create transaction |
 | `GET` | `/transactions/` | List all transactions |
+| `GET` | `/transaction/by_email/<email>/` | List pending transactions for email |
+| `GET` | `/transactions/history/<email>/` | Full transaction history for email |
+| `GET` | `/moonpay/receipt/<external_id>/` | Resolve MoonPay receipt URL from external id |
+| `POST` | `/moonpay/map-transaction/` | Map MoonPay transaction id to a transaction |
 | `PUT` | `/update/status/<tx_hash>/` | Update transaction status |
 
 ### MoonPay Integration Endpoints
@@ -287,7 +320,27 @@ Visit `http://127.0.0.1:8000` to access the application.
 |--------|----------|-------------|
 | `POST` | `/moonpay/simulate-deposit/` | Simulate MoonPay deposit |
 | `POST` | `/moonpay/webhook/` | MoonPay webhook handler |
-| `POST` | `/moonpay/test-webhook/` | Test webhook endpoint |
+| `POST` | `/moonpay/test-notification/` | Trigger MoonPay sandbox simulation |
+
+## 🆕 Recent Changes
+
+- Transaction History UI: receipt links now use the MoonPay transaction ID, not the external id.
+  - Captured via SDK completion and stored, or resolved via `GET /moonpay/receipt/<external_id>/`.
+  - Pending transactions no longer show a receipt link.
+- New endpoints:
+  - `GET /moonpay/receipt/<external_id>/` returns the correct receipt URL if available.
+  - `POST /moonpay/map-transaction/` stores the MoonPay transaction ID for a given `tx_hash`.
+- Model changes:
+  - `Transaction.status` now includes `completed`.
+  - New optional field: `Transaction.moonpay_transaction_id`.
+- Security hardening (dev-safe):
+  - SECRET_KEY now supports env `DJANGO_SECRET_KEY` (preferred) and `SECRET_KEY` (fallback) with existing default if unset.
+  - Enabled `X_FRAME_OPTIONS=DENY` and `SECURE_CONTENT_TYPE_NOSNIFF`.
+  - Added lightweight middleware to set `X-XSS-Protection: 1; mode=block`.
+  - MoonPay simulation and receipt resolver use `MOONPAY_SECRET_KEY` from env with safe fallback.
+
+### MoonPay API reference
+- The receipt URL is derived from the MoonPay transaction ID. See MoonPay docs for retrieving sell transactions by id/external id.
 
 ## 🌙 MoonPay Integration
 
@@ -310,7 +363,7 @@ const widget = moonPay({
     flow: "sell",
     environment: "sandbox",
     params: {
-        apiKey: "pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz",
+        apiKey: "<your-moonpay-public-api-key>",
         baseCurrencyCode: "sol",
         baseCurrencyAmount: amount,
         defaultCurrencyCode: "inr",
@@ -368,6 +421,7 @@ class Transaction(models.Model):
         ('pending', 'pending'),
         ('confirmed', 'confirmed'),
         ('failed', 'failed'),
+        ('completed', 'completed'),
     ]
     
     tx_id = models.AutoField(primary_key=True)
@@ -376,6 +430,7 @@ class Transaction(models.Model):
     tx_hash = models.CharField(max_length=500, unique=True)
     amount = models.DecimalField(max_digits=18, decimal_places=9)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+    moonpay_transaction_id = models.CharField(max_length=64, null=True, blank=True)
 ```
 
 ### Relationships

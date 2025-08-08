@@ -38,6 +38,7 @@ class Transaction(models.Model):
         ('pending', 'pending'),
         ('confirmed', 'confirmed'),
         ('failed', 'failed'),
+        ('completed', 'completed'),
     ]
 
     tx_id = models.AutoField(primary_key=True)
@@ -46,6 +47,7 @@ class Transaction(models.Model):
     tx_hash = models.CharField(max_length=500, unique=True)
     amount = models.DecimalField(max_digits=18, decimal_places=9, default=0)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    moonpay_transaction_id = models.CharField(max_length=64, null=True, blank=True)
     #network = models.CharField(max_length=10, default='devnet')
     #initiated_at = models.DateTimeField(auto_now_add=True)
     #confirmed_at = models.DateTimeField(null=True, blank=True)

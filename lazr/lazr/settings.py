@@ -21,7 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-emxxf1m5su@fsa5__x$=h)qj@otuzw3#50)kb)i$@4v(u1+=3t"
+# Support env-based keys non-breakingly: prefer DJANGO_SECRET_KEY, then SECRET_KEY, else fallback to current value
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY") or "django-insecure-emxxf1m5su@fsa5__x$=h)qj@otuzw3#50)kb)i$@4v(u1+=3t"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -67,6 +68,8 @@ SOCIALACCOUNT_PROVIDERS = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
+    # Add lightweight security headers middleware (non-breaking)
+    'myapp.middleware.SecurityHeadersMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'allauth.account.middleware.AccountMiddleware',
@@ -114,6 +117,10 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = None # Disable the default policy for develo
 CSRF_TRUSTED_ORIGINS = [
     "https://e5723bfe4258.ngrok-free.app"
 ]
+
+# Baseline secure headers (non-breaking in dev)
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

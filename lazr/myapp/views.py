@@ -4,6 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
@@ -84,18 +85,18 @@ def transak_claim_view(request):
 
     tx_hash = request.GET.get('tx_hash')
     if not tx_hash:
-        return render(request, 'moonpay_claim.html', {'error': 'No transaction specified.'})
+        return render(request, 'moonpay_claim.html', {'error': 'No transaction specified.', 'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')})
 
     try:
         transaction = Transaction.objects.get(tx_hash=tx_hash)
     except Transaction.DoesNotExist:
-        return render(request, 'moonpay_claim.html', {'error': 'Transaction not found.'})
+        return render(request, 'moonpay_claim.html', {'error': 'Transaction not found.', 'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')})
 
     # Check that the transaction was sent to the logged-in user's email
     if transaction.to_receiver.email != request.user.email:
         raise PermissionDenied("You do not have permission to claim this transaction.")
 
-    return render(request, 'moonpay_claim.html', {'transaction': transaction})
+    return render(request, 'moonpay_claim.html', {'transaction': transaction, 'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')})
 
 
 def claim_success_view(request):
@@ -240,6 +241,16 @@ class TransactionByEmailListView(generics.ListAPIView):
     def get_queryset(self):
         email = self.kwargs['to_receiver_email']
         return Transaction.objects.filter(to_receiver__email=email, status="pending")
+
+
+# Add: Full transaction history by recipient email (non-breaking new endpoint)
+class TransactionHistoryByEmailView(generics.ListAPIView):
+    serializer_class = TransactionSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        email = self.kwargs['email']
+        return Transaction.objects.filter(to_receiver__email=email).order_by('-tx_id')
 
 
 # Get Sender by Wallet Address
@@ -424,8 +435,8 @@ def test_moonpay_notification(request):
         # MoonPay sandbox simulation endpoint
         simulation_url = "https://api.moonpay.com/v3/simulate/sell_transaction"
 
-        # Your MoonPay secret key for API calls
-        secret_key = "sk_test_bSuZag7HAnqGTJwEh4473JdxVMYpLoI0"
+        # Use env-based MoonPay secret key
+        secret_key = os.getenv("MOONPAY_SECRET_KEY", "")
 
         # Prepare the simulation request
         simulation_data = {
@@ -456,3 +467,106 @@ def test_moonpay_notification(request):
             "success": False,
             "error": str(e)
         }, status=500)
+
+
+@require_POST
+@csrf_exempt
+def map_moonpay_transaction(request):
+    try:
+        data = json.loads(request.body or '{}')
+        external_id = data.get('externalTransactionId')
+        moonpay_tx_id = data.get('moonpayTransactionId')
+        if not external_id or not moonpay_tx_id:
+            return JsonResponse({"success": False, "error": "Missing parameters"}, status=400)
+        try:
+            txn = Transaction.objects.get(tx_hash=external_id)
+        except Transaction.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Transaction not found"}, status=404)
+        # Optional: Only allow mapping for the authenticated recipient
+        if request.user.is_authenticated and txn.to_receiver.email != request.user.email:
+            return JsonResponse({"success": False, "error": "Forbidden"}, status=403)
+        txn.moonpay_transaction_id = moonpay_tx_id
+        txn.save(update_fields=["moonpay_transaction_id"])
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@require_GET
+def moonpay_receipt(request, external_id: str):
+    """
+    Resolve MoonPay receipt URL from our external transaction id (tx_hash).
+    Returns { "receipt_url": str | null }
+    """
+    try:
+        # 1) Prefer stored mapping if present
+        try:
+            txn = Transaction.objects.get(tx_hash=external_id)
+            if txn.moonpay_transaction_id:
+                return JsonResponse({
+                    "receipt_url": f"https://buy.moonpay.com/transaction_receipt?transactionId={txn.moonpay_transaction_id}"
+                })
+        except Transaction.DoesNotExist:
+            txn = None
+
+        secret_key = os.getenv("MOONPAY_SECRET_KEY", "")
+        mp_id = None
+        if secret_key:
+            headers = {
+                "Authorization": f"Bearer {secret_key}",
+                "Content-Type": "application/json"
+            }
+            # Try documented external identifier endpoint
+            try:
+                primary_url = f"https://api.moonpay.com/v3/sell_transactions/external_transaction_id/{external_id}"
+                resp = requests.get(primary_url, headers=headers, timeout=20)
+                if resp.status_code == 200:
+                    data = resp.json() or {}
+                    mp_id = data.get("id") or data.get("transactionId")
+            except Exception:
+                pass
+
+            # Fallback to list with query param
+            if not mp_id:
+                try:
+                    fallback_url = "https://api.moonpay.com/v3/sell_transactions"
+                    params = {"externalTransactionId": external_id}
+                    resp2 = requests.get(fallback_url, headers=headers, params=params, timeout=20)
+                    if resp2.status_code == 200:
+                        data2 = resp2.json()
+                        # Some tenants return list, some return object with 'data'
+                        if isinstance(data2, list):
+                            first = data2[0] if data2 else None
+                        else:
+                            first = (data2 or {}).get('data', [{}])[0] if (data2 or {}).get('data') else None
+                        if first:
+                            mp_id = first.get("id") or first.get("transactionId")
+                except Exception:
+                    pass
+
+            # Extra fallback to v1 path if needed
+            if not mp_id:
+                try:
+                    v1_url = "https://api.moonpay.com/v1/sell_transactions"
+                    params = {"externalTransactionId": external_id}
+                    resp3 = requests.get(v1_url, headers=headers, params=params, timeout=20)
+                    if resp3.status_code == 200:
+                        data3 = resp3.json()
+                        if isinstance(data3, list) and data3:
+                            first = data3[0]
+                            mp_id = first.get("id") or first.get("transactionId")
+                except Exception:
+                    pass
+
+        if mp_id:
+            # Persist mapping for future direct linking
+            if txn and not txn.moonpay_transaction_id:
+                txn.moonpay_transaction_id = mp_id
+                txn.save(update_fields=["moonpay_transaction_id"])
+            return JsonResponse({
+                "receipt_url": f"https://buy.moonpay.com/transaction_receipt?transactionId={mp_id}"
+            })
+
+        return JsonResponse({"receipt_url": None})
+    except Exception as e:
+        return JsonResponse({"receipt_url": None, "error": str(e)}, status=200)

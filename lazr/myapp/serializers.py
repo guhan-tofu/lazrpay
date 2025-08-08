@@ -42,6 +42,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             'tx_hash',
             'amount',
             'status',
+            'moonpay_transaction_id',
         ]
         read_only_fields = ['tx_id']
 

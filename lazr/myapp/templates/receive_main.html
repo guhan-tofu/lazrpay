@@ -274,9 +274,15 @@
 
             <!-- Transaction History -->
             <div class="glassmorphism rounded-3xl card-shadow p-8 hover-lift fade-in-section">
-                <h2 class="text-3xl font-bold text-lazr-purple dark:text-white mb-6">
-                    <i class="fas fa-history mr-3"></i>Transaction History
-                </h2>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-lazr-purple dark:text-white">
+                        <i class="fas fa-history mr-3"></i>Transaction History
+                    </h2>
+                    <button id="history-refresh-btn" class="flex items-center space-x-2 text-lazr-pink hover:text-pink-600 transition-colors group">
+                        <i class="fas fa-sync-alt group-hover:rotate-180 transition-transform duration-300"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
                 <div id="transaction-history" class="space-y-4">
                     <!-- Loading state -->
                     <div class="text-center py-8">
@@ -331,6 +337,25 @@
         const userEmail = window.userEmail;
         
 
+        // Function to map status to badge HTML
+        function statusBadge(status) {
+            const map = {
+                pending: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
+                completed: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+                confirmed: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
+                failed: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+            };
+            const icon = {
+                pending: 'fa-clock',
+                completed: 'fa-check-circle',
+                confirmed: 'fa-badge-check',
+                failed: 'fa-times-circle'
+            };
+            const cls = map[status] || map.pending;
+            const ic = icon[status] || icon.pending;
+            return `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${cls}"><i class="fas ${ic} mr-1"></i>${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+        }
+
         // Function to load pending transactions
         async function loadPendingTransactions() {
             try {
@@ -359,30 +384,25 @@
                     div.className = "border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:shadow-md transition-all duration-300 hover:scale-105 bg-white dark:bg-dark-card";
                     div.innerHTML = `
                         <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-12 h-12 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-2xl flex items-center justify-center shadow-lg">
-                                    <i class="fas fa-download text-lazr-purple text-lg"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-lazr-purple dark:text-white">${parseFloat(tx.amount).toFixed(4)} SOL</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-300">From: ${tx.from_user_email || 'Unknown'}</p>
-                                </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-2xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-download text-lazr-purple text-lg"></i>
                             </div>
-                            <div class="text-right">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
-                                    <i class="fas fa-clock mr-1"></i>Pending
-                                </span>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${new Date(tx.created_at).toLocaleDateString()}</p>
+                            <div>
+                                <h3 class="text-lg font-bold text-lazr-purple dark:text-white">${parseFloat(tx.amount).toFixed(4)} SOL</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">From: ${tx.from_user_email || 'Unknown'}</p>
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="text-sm text-gray-600 dark:text-gray-300">
                                 <p><strong>Transaction ID:</strong> <span class="font-mono">${tx.tx_hash}</span></p>
                             </div>
-                            <a href="/receive/?tx_hash=${tx.tx_hash}" 
-                               class="button-gradient text-white px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center">
-                                <i class="fas fa-download mr-2"></i>Claim Now
-                            </a>
+                            <div class="flex items-center gap-3">
+                                <a href="/receive/?tx_hash=${tx.tx_hash}" 
+                                   class="button-gradient text-white px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center">
+                                    <i class="fas fa-download mr-2"></i>Claim Now
+                                </a>
+                                
+                             </div>
                         </div>
                     `;
                     container.appendChild(div);
@@ -401,11 +421,89 @@
             }
         }
 
-        // Load transactions on page load
-        loadPendingTransactions();
+        // Function to load full transaction history
+        async function loadTransactionHistory() {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/transactions/history/${userEmail}/`);
+                const history = await res.json();
+                const container = document.getElementById("transaction-history");
+                container.innerHTML = "";
 
-        // Refresh button functionality
-        document.getElementById('refresh-btn').addEventListener('click', loadPendingTransactions);
+                if (!Array.isArray(history) || history.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-clipboard-list text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No Transactions Yet</h3>
+                            <p class="text-gray-500 dark:text-gray-400">Your full history will appear here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                history.forEach(tx => {
+                    const div = document.createElement('div');
+                    div.className = "border border-gray-200 dark:border-gray-700 rounded-2xl p-6 bg-white dark:bg-dark-card";
+                    const receiptLink = tx.moonpay_transaction_id
+                        ? `<a href="https://buy.moonpay.com/transaction_receipt?transactionId=${encodeURIComponent(tx.moonpay_transaction_id)}" target="_blank" rel="noopener" class="text-lazr-pink hover:underline">Receipt</a>`
+                        : `<a href="#" data-external-id="${tx.tx_hash}" class="text-lazr-pink hover:underline receipt-link">Receipt</a>`;
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <div class="text-sm text-gray-600 dark:text-gray-300">From: ${tx.from_user_email || 'Unknown'}</div>
+                                <div class="text-lg font-bold text-lazr-purple dark:text-white">${parseFloat(tx.amount).toFixed(4)} SOL</div>
+                            </div>
+                            <div class="text-right">${statusBadge(tx.status)}</div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm mt-2">
+                            <div class="text-gray-600 dark:text-gray-300 truncate"><span class="font-semibold">Tx:</span> <span class="font-mono">${tx.tx_hash}</span></div>
+                            ${receiptLink}
+                        </div>`;
+                    container.appendChild(div);
+                });
+                // Attach click handlers to resolve receipt URLs on demand
+                document.querySelectorAll('#transaction-history a.receipt-link').forEach(el => {
+                    el.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        const extId = el.getAttribute('data-external-id');
+                        try {
+                            const resp = await fetch(`/moonpay/receipt/${encodeURIComponent(extId)}/`);
+                            const data = await resp.json();
+                            if (data.receipt_url) {
+                                window.open(data.receipt_url, '_blank', 'noopener');
+                            } else {
+                                alert('Receipt not available yet.');
+                            }
+                        } catch (err) {
+                            alert('Error resolving receipt URL.');
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading history:', error);
+                document.getElementById('transaction-history').innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Error Loading History</h3>
+                        <p class="text-red-600 dark:text-red-400">Failed to load your history. Please try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initial load
+        loadPendingTransactions();
+        loadTransactionHistory();
+
+        // Refresh buttons
+        document.getElementById('refresh-btn').addEventListener('click', () => {
+            loadPendingTransactions();
+            loadTransactionHistory();
+        });
+        document.getElementById('history-refresh-btn').addEventListener('click', loadTransactionHistory);
     </script>
     {% endif %}
 

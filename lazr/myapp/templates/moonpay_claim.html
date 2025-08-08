@@ -294,7 +294,7 @@
                         flow: "sell",
                         environment: "sandbox",
                         params: {
-                            apiKey: "pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz",
+                            apiKey: "{{ MOONPAY_API_KEY }}",
                             baseCurrencyCode: "sol",
                             baseCurrencyAmount: amount,
                             defaultCurrencyCode: "inr",
@@ -363,6 +363,22 @@
                             },
                             onTransactionCompleted: function(transaction) {
                                 statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl">Transaction completed! Your INR will be deposited to your bank account.</div>';
+                                try {
+                                    var moonpayTxId = (transaction && (transaction.transactionId || transaction.id)) || null;
+                                    if (moonpayTxId) {
+                                        fetch('/moonpay/map-transaction/', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRFToken': getCookie('csrftoken')
+                                            },
+                                            body: JSON.stringify({
+                                                externalTransactionId: txHash,
+                                                moonpayTransactionId: moonpayTxId
+                                            })
+                                        }).catch(function(){});
+                                    }
+                                } catch (e) {}
                             },
                             onCloseOverlay: function() {
                             }
