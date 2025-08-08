@@ -28,6 +28,7 @@ class RecipientSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     from_user_id = serializers.IntegerField(source='from_user.id', read_only=True)
     to_receiver_email = serializers.EmailField(source='to_receiver.email', read_only=True)
+    from_user_email = serializers.EmailField(source='from_user.user.email', read_only=True)
 
     class Meta:
         model = Transaction
@@ -35,6 +36,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             'tx_id',
             'from_user',
             'from_user_id',
+            'from_user_email',
             'to_receiver',
             'to_receiver_email',
             'tx_hash',

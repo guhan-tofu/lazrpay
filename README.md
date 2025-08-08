@@ -1,4 +1,4 @@
-# 🚀 LAZRPAY - Solana Payment System
+# 🚀 LAZRPAY (updated)
 
 > **A Modern, Decentralized Payment Platform Built on Solana Blockchain**
 
