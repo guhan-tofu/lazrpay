@@ -18,6 +18,11 @@ urlpatterns = [
     path("recipient/by_email/<str:email>/", views.RecipientByEmailView.as_view(), name="get_recipient_by_email"),
     path("transaction/by_txid/<str:tx_hash>/", views.TransactionByIdView.as_view(), name="get_transaction_by_txid"),
     path("transaction/by_email/<str:to_receiver_email>/", views.TransactionByEmailListView.as_view(), name="get_transaction_by_email"),
+    # New non-breaking history endpoint
+    path("transactions/history/<str:email>/", views.TransactionHistoryByEmailView.as_view(), name="transactions_history_by_email"),
+    # New utility endpoints
+    path("moonpay/receipt/<str:external_id>/", views.moonpay_receipt, name="moonpay_receipt"),
+    path("moonpay/map-transaction/", views.map_moonpay_transaction, name="map_moonpay_transaction"),
     path("update/status/<str:tx_hash>/", views.UpdateTransactionStatusView.as_view(), name="update_transaction_status"),
     path('sender/update-wallet/<str:sender_id>/', views.UpdateWalletAddressView.as_view(), name='update-wallet'),
     path("email/send/", views.send_welcome_email, name="send_welcome_email"),

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self';">
+    <title>Access Forbidden - LazrPay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lazr-purple': '#6366f1',
+                        'lazr-blue': '#3b82f6',
+                        'lazr-green': '#10b981',
+                        'lazr-red': '#ef4444',
+                        'lazr-yellow': '#f59e0b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .button-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+        }
+        
+        .fade-in-section {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .dark .glow-effect {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-lazr-purple to-lazr-blue rounded-xl flex items-center justify-center">
+                            <i class="fas fa-bolt text-white text-xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold text-lazr-purple dark:text-white">LazrPay</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-lazr-purple dark:hover:text-lazr-purple transition-colors">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="/receive/" class="text-gray-600 dark:text-gray-300 hover:text-lazr-purple dark:hover:text-lazr-purple transition-colors">
+                        <i class="fas fa-download mr-2"></i>Receive
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Error Header -->
+        <div class="text-center mb-12 fade-in-section">
+            <div class="w-24 h-24 bg-red-100 dark:bg-red-900 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg glow-effect">
+                <i class="fas fa-ban text-red-600 dark:text-red-400 text-4xl"></i>
+            </div>
+            <h1 class="text-6xl font-black text-red-600 dark:text-red-400 mb-4">
+                403
+            </h1>
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">
+                Access Forbidden
+            </h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                You don't have permission to access this resource. This action has been blocked for security reasons.
+            </p>
+        </div>
+
+        <!-- Error Details Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 p-8 mb-8 fade-in-section">
+            <div class="text-center">
+                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-2xl p-6 mb-6">
+                    <div class="flex items-start justify-center">
+                        <i class="fas fa-shield-alt text-red-600 dark:text-red-400 text-xl mr-4 mt-1"></i>
+                        <div>
+                            <p class="text-red-800 dark:text-red-200 font-medium">
+                                <strong>Security Notice:</strong> 
+                                Your request has been blocked because you don't have the necessary permissions to access this transaction or resource.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+                        <i class="fas fa-info-circle mr-2 text-lazr-blue"></i>
+                        Why did this happen?
+                    </h3>
+                    <ul class="text-left text-gray-600 dark:text-gray-300 space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                            <span>You may be trying to access a transaction that doesn't belong to you</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                            <span>Your session may have expired or you're not properly authenticated</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                            <span>This could be a security measure to protect user privacy</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center space-y-4 fade-in-section">
+            <a href="/" class="button-gradient text-white py-4 px-8 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center mx-auto group">
+                <i class="fas fa-home mr-3 group-hover:translate-x-1 transition-transform"></i>
+                Return to Home
+            </a>
+            
+            <div class="flex justify-center space-x-4">
+                <a href="/receive/" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-xl font-medium transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-600 inline-flex items-center">
+                    <i class="fas fa-download mr-2"></i>
+                    Go to Receive
+                </a>
+                
+                <button onclick="history.back()" class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-xl font-medium transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-600 inline-flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Go Back
+                </button>
+            </div>
+        </div>
+
+        <!-- Additional Help -->
+        <div class="mt-12 text-center fade-in-section">
+            <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                    <i class="fas fa-question-circle mr-2"></i>
+                    Need Help?
+                </h3>
+                <p class="text-blue-700 dark:text-blue-300 mb-4">
+                    If you believe this is an error or need assistance, please contact our support team.
+                </p>
+                <a href="mailto:support@lazrpay.com" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-gray-500 dark:text-gray-400">
+                <p>&copy; 2024 LazrPay. All rights reserved.</p>
+                <p class="mt-2 text-sm">
+                    Secure • Fast • Reliable
+                </p>
+                <p class="mt-2 text-xs text-red-400 dark:text-red-300">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Security Response: HTTP 403 Forbidden
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to buttons
+            const buttons = document.querySelectorAll('button, a');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -196,8 +196,8 @@
                 
                 <!-- Right: Navigation and Theme Toggle -->
                 <div class="flex items-center space-x-6">
-                    <nav class="hidden md:flex items-center space-x-8">
-                        {% if user.is_authenticated %}
+                <nav class="hidden md:flex items-center space-x-8">
+                    {% if user.is_authenticated %}
                             <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium relative group">
                                 <i class="fas fa-paper-plane mr-2"></i>Send
                                 <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-lazr-pink transition-all duration-300 group-hover:w-full"></span>
@@ -209,21 +209,21 @@
                             <a href="{% url 'logout' %}" class="button-gradient text-white px-6 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105">
                                 <i class="fas fa-sign-out-alt mr-2"></i>Logout
                             </a>
-                        {% else %}
+                    {% else %}
                             <a href="{% provider_login_url 'google' %}" class="button-gradient text-white px-6 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105">
                                 <i class="fab fa-google mr-2"></i>Sign in with Google
                             </a>
-                        {% endif %}
-                    </nav>
+                    {% endif %}
+                </nav>
 
                     <!-- Dark Mode Toggle Slider -->
                     <div class="theme-toggle" id="theme-toggle"></div>
-                    
-                    <!-- Mobile menu button -->
-                    <div class="md:hidden">
-                        <button class="text-white hover:text-lazr-pink transition-colors">
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button class="text-white hover:text-lazr-pink transition-colors">
                             <i class="fas fa-bars text-xl"></i>
-                        </button>
+                    </button>
                     </div>
                 </div>
             </div>

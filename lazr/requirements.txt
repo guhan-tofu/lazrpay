@@ -1,9 +1,9 @@
-npm install django
-npm install solana==0.28
-npm install solders
-npm install djangorestframework
-npm install djangorestframework-simplejwt
-npm install django-cors-headers
-npm install django-allauth
-npm install requests
-npm install @moonpay/moonpay-js
+Django>=5.1.5
+solana==0.28
+solders
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+django-allauth
+requests
+python-dotenv
