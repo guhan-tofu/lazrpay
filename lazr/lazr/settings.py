@@ -29,9 +29,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']  # Allow all hosts for development purposes
 
 
+
 # Application definition
-
-
 SITE_ID = 2
 
 INSTALLED_APPS = [
@@ -52,6 +51,7 @@ INSTALLED_APPS = [
 
 ]
 
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
@@ -63,6 +63,10 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+# Skip the Google login confirmation page and redirect directly
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
