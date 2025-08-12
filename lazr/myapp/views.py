@@ -24,6 +24,9 @@ import json
 import base58
 import requests
 from dotenv import load_dotenv
+from django.db import transaction as db_transaction
+from django.utils import timezone
+from datetime import timedelta
 
 # Solana imports for actual SOL transfers
 from solana.rpc.api import Client
@@ -114,6 +117,14 @@ def transak_claim_view(request):
     if transaction.to_receiver.email != request.user.email:
         return render_forbidden(request)
 
+    # Auto-reset stale processing sessions (e.g., user closed/refresh mid-flow)
+    if transaction.status == 'processing' and transaction.processing_started_at:
+        ttl_minutes = int(os.getenv('CLAIM_PROCESSING_TTL_MINUTES', '10'))
+        if timezone.now() - transaction.processing_started_at > timedelta(minutes=ttl_minutes):
+            transaction.status = 'pending'
+            transaction.processing_started_at = None
+            transaction.save(update_fields=['status', 'processing_started_at'])
+
     # Check if transaction is already completed
     if transaction.status == 'completed':
         # Redirect to a success page or show message that transaction is already completed
@@ -160,6 +171,14 @@ def deposit_success_view(request):
     return render(request, 'deposit_success.html', context)
 
 
+def claim_error_view(request):
+    tx_hash = request.GET.get('tx_hash')
+    message = request.GET.get('message', 'An error occurred during your claim.')
+    expected = request.GET.get('expected')
+    context = { 'tx_hash': tx_hash, 'message': message, 'expected': expected }
+    return render(request, 'claim_error.html', context)
+
+
 def logout_view(request):
     logout(request)
     return redirect("/")
@@ -192,6 +211,14 @@ def send_sol(request):
         return JsonResponse({'error': 'Only POST allowed'}, status=405)
 
     try:
+        # Require strong authorization; disable in production by default
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+        if not getattr(request.user, 'is_staff', False):
+            return JsonResponse({'error': 'Forbidden'}, status=403)
+        if os.getenv('ENABLE_SEND_SOL', 'false').lower() != 'true':
+            return JsonResponse({'error': 'Endpoint disabled'}, status=403)
+
         data = json.loads(request.body)
         amount = float(data.get('amount', 0))
         recipient_address = data.get('recipient', '')
@@ -378,36 +405,70 @@ def simulate_moonpay_deposit(request):
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
     try:
+        # Enforce authenticated recipient only
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "Authentication required"}, status=401)
+
         data = json.loads(request.body)
         moonpay_wallet_address = data.get('moonpayWalletAddress')
         deposit_id = data.get('moonpayDepositId')
-        crypto_amount = data.get('cryptoAmount')
+        # Client-provided amount is validated against server-side value
+        client_crypto_amount_raw = data.get('cryptoAmount')
         external_transaction_id = data.get('externalTransactionId')
 
         if not moonpay_wallet_address:
             return JsonResponse({"error": "Missing MoonPay wallet address"}, status=400)
 
-        # Find the SPECIFIC transaction by tx_hash, not just any pending transaction
-        if external_transaction_id:
+        # Find the SPECIFIC transaction by tx_hash and lock it for idempotency
+        if not external_transaction_id:
+            return JsonResponse({"error": "Missing external transaction id"}, status=400)
+
+        # Atomic lock to enforce single processing
+        with db_transaction.atomic():
             try:
-                transaction = Transaction.objects.get(tx_hash=external_transaction_id)
+                transaction = (
+                    Transaction.objects.select_for_update().get(tx_hash=external_transaction_id)
+                )
             except Transaction.DoesNotExist:
                 return JsonResponse({"error": f"Transaction {external_transaction_id} not found"}, status=404)
-        else:
-            # Fallback to first pending transaction (for backward compatibility)
-            transaction = Transaction.objects.filter(status='pending').first()
-            if not transaction:
-                return JsonResponse({"error": "No pending transactions found"}, status=404)
 
-        # Check if transaction has already been claimed
-        if transaction.status != 'pending':
-            return JsonResponse({"error": f"Transaction {transaction.tx_hash} has already been claimed (status: {transaction.status})"}, status=400)
+            # Ensure the requestor is the intended recipient
+            if transaction.to_receiver.email != request.user.email:
+                return render_forbidden(request)
 
-        # Use the amount from MoonPay if provided, otherwise use transaction amount
-        if crypto_amount:
-            sol_amount = float(crypto_amount)
-        else:
-            sol_amount = float(transaction.amount)
+            # Enforce state machine: only pending can proceed; processing is a lock
+            if transaction.status == 'completed':
+                return JsonResponse({"error": "Transaction already completed"}, status=400)
+            if transaction.status == 'processing':
+                return JsonResponse({"error": "Transaction is already being processed"}, status=409)
+            if transaction.status != 'pending':
+                return JsonResponse({"error": f"Invalid transaction state: {transaction.status}"}, status=400)
+
+            # Validate client-reported amount matches server-side amount within tolerance
+            try:
+                # Some SDKs pass strings; convert carefully
+                client_crypto_amount = float(str(client_crypto_amount_raw)) if client_crypto_amount_raw is not None else None
+            except (ValueError, TypeError):
+                client_crypto_amount = None
+
+            expected_amount = float(transaction.amount)
+            if client_crypto_amount is None:
+                return JsonResponse({"error": "Missing or invalid amount from provider"}, status=400)
+            # Allow tiny float variance (1e-9 SOL)
+            if abs(client_crypto_amount - expected_amount) > 1e-9:
+                return JsonResponse({
+                    "error": "Amount mismatch. Please use the provided claim flow for the exact received amount.",
+                    "expected_amount": expected_amount,
+                    "error_code": "AMOUNT_MISMATCH"
+                }, status=400)
+
+            # Set to processing to lock further attempts
+            transaction.status = 'processing'
+            transaction.processing_started_at = timezone.now()
+            transaction.save(update_fields=['status', 'processing_started_at'])
+
+        # Always use the server-side transaction amount
+        sol_amount = float(transaction.amount)
 
         # Send SOL to MoonPay's provided wallet address
         lamports = int(sol_amount * 1_000_000_000)
@@ -428,9 +489,9 @@ def simulate_moonpay_deposit(request):
 
         resp = connection.send_transaction(txn, keypair)
 
-        # Update transaction status to completed so it won't show in pending
+        # Mark completed after successful transfer
         transaction.status = "completed"
-        transaction.save()
+        transaction.save(update_fields=["status"])
 
         return JsonResponse({
             "success": True,
@@ -440,6 +501,19 @@ def simulate_moonpay_deposit(request):
         })
 
     except Exception as e:
+        # Best-effort: if we set status to processing earlier but failed later,
+        # revert to pending to allow retry. We avoid broad DB scans here; only adjust
+        # if we can resolve the transaction id from the request body.
+        try:
+            data = json.loads(request.body or '{}')
+            external_transaction_id = data.get('externalTransactionId')
+            if external_transaction_id:
+                txn = Transaction.objects.filter(tx_hash=external_transaction_id, status='processing').first()
+                if txn:
+                    txn.status = 'pending'
+                    txn.save(update_fields=['status'])
+        except Exception:
+            pass
         return JsonResponse({"error": str(e)}, status=500)
 
 
@@ -492,6 +566,30 @@ def test_moonpay_notification(request):
             "success": False,
             "error": str(e)
         }, status=500)
+
+
+@require_POST
+@csrf_exempt
+def abandon_processing(request):
+    try:
+        data = json.loads(request.body or '{}')
+        external_id = data.get('externalTransactionId') or request.GET.get('tx_hash')
+        if not external_id:
+            return JsonResponse({"success": False, "error": "Missing transaction id"}, status=400)
+        try:
+            txn = Transaction.objects.get(tx_hash=external_id)
+        except Transaction.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Transaction not found"}, status=404)
+        # Only intended recipient can abandon
+        if request.user.is_authenticated and txn.to_receiver.email != request.user.email:
+            return render_forbidden(request)
+        if txn.status == 'processing':
+            txn.status = 'pending'
+            txn.processing_started_at = None
+            txn.save(update_fields=['status', 'processing_started_at'])
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 @require_POST

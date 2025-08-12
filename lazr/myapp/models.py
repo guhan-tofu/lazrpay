@@ -39,6 +39,8 @@ class Transaction(models.Model):
         ('confirmed', 'confirmed'),
         ('failed', 'failed'),
         ('completed', 'completed'),
+        # Added for server-side idempotency/locking during off-ramp processing
+        ('processing', 'processing'),
     ]
 
     tx_id = models.AutoField(primary_key=True)
@@ -48,6 +50,7 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=18, decimal_places=9, default=0)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     moonpay_transaction_id = models.CharField(max_length=64, null=True, blank=True)
+    processing_started_at = models.DateTimeField(null=True, blank=True)
     #network = models.CharField(max_length=10, default='devnet')
     #initiated_at = models.DateTimeField(auto_now_add=True)
     #confirmed_at = models.DateTimeField(null=True, blank=True)

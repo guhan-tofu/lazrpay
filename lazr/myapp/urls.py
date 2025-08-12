@@ -30,11 +30,13 @@ urlpatterns = [
     path("moonpay-claim/", views.transak_claim_view, name="moonpay_claim"),
     path("claim-success/", views.claim_success_view, name="claim_success"),
     path("deposit-success/", views.deposit_success_view, name="deposit_success"),
+    path("claim-error/", views.claim_error_view, name="claim_error"),
     path("logout", views.logout_view, name="logout"),
     path("moonpay/webhook/", views.moonpay_webhook, name="moonpay_webhook"),
     path("moonpay/test-webhook/", views.test_moonpay_webhook, name="test_moonpay_webhook"),
     path("moonpay/simulate-deposit/", views.simulate_moonpay_deposit, name="simulate_moonpay_deposit"),
     path("moonpay/test-notification/", views.test_moonpay_notification, name="test_moonpay_notification"),
+    path("moonpay/abandon/", views.abandon_processing, name="abandon_processing"),
 ]
 
 # Compare this snippet from lazr/lazr/urls.py:

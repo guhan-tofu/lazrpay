@@ -1,4 +1,4 @@
-# 🚀 LAZRPAY (updated-8/8/24)
+# 🚀 LAZRPAY (updated-12/8/24)
 
 > **A Modern, Decentralized Payment Platform Built on Solana Blockchain**
 
@@ -217,6 +217,8 @@ Visit `http://127.0.0.1:8000` to access the application.
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | `xxxxx` |
 | `GMAIL_ADDRESS` | Gmail address used to send emails | `lazrpay@gmail.com` |
 | `GMAIL_APP_PASSWORD` | Gmail app password | `abcd efgh ijkl mnop` |
+| `CLAIM_PROCESSING_TTL_MINUTES` | Minutes before a `processing` claim auto-resets to `pending` | `10` |
+| `ENABLE_SEND_SOL` | Enables `POST /sol/send/` (staff only) | `false` |
 
 > Note: `DJANGO_SECRET_KEY` takes precedence if both are set. If neither is set, a development-only fallback is used.
 
@@ -313,6 +315,7 @@ MOONPAY_SECRET_KEY=sk_test_your_secret_key
 | `GET` | `/moonpay/receipt/<external_id>/` | Resolve MoonPay receipt URL from external id |
 | `POST` | `/moonpay/map-transaction/` | Map MoonPay transaction id to a transaction |
 | `PUT` | `/update/status/<tx_hash>/` | Update transaction status |
+| `GET` | `/claim-error/` | Error page shown on amount mismatch/invalid claim |
 
 ### MoonPay Integration Endpoints
 
@@ -321,6 +324,7 @@ MOONPAY_SECRET_KEY=sk_test_your_secret_key
 | `POST` | `/moonpay/simulate-deposit/` | Simulate MoonPay deposit |
 | `POST` | `/moonpay/webhook/` | MoonPay webhook handler |
 | `POST` | `/moonpay/test-notification/` | Trigger MoonPay sandbox simulation |
+| `POST` | `/moonpay/abandon/` | Abandon in-flight claim and revert to pending |
 
 ## 🆕 Recent Changes
 
@@ -338,6 +342,21 @@ MOONPAY_SECRET_KEY=sk_test_your_secret_key
   - Enabled `X_FRAME_OPTIONS=DENY` and `SECURE_CONTENT_TYPE_NOSNIFF`.
   - Added lightweight middleware to set `X-XSS-Protection: 1; mode=block`.
   - MoonPay simulation and receipt resolver use `MOONPAY_SECRET_KEY` from env with safe fallback.
+
+### Offramp security additions (2025-08-12)
+- Idempotent claim processing with server-side lock:
+  - New `Transaction.status = 'processing'` state and `processing_started_at` timestamp.
+  - Server uses row-level locks to prevent duplicate processing; only one in-flight claim per transaction.
+- Amount immutability enforcement:
+  - Server validates MoonPay SDK `cryptoAmount` against our stored `Transaction.amount` (with tiny tolerance). Mismatches are rejected.
+  - On mismatch the client is redirected to `/claim-error/?tx_hash=...&message=...&expected=...` with a return button.
+- Safe recovery for abandoned/closed widgets:
+  - Client sends a beacon to `POST /moonpay/abandon/` on overlay close/page unload to revert `processing → pending`.
+  - Stale locks auto-reset after a TTL (`CLAIM_PROCESSING_TTL_MINUTES`, default 10 minutes).
+- Admin-only transfer endpoint:
+  - `POST /sol/send/` now requires authenticated staff and `ENABLE_SEND_SOL=true`.
+- Minor UX hardening:
+  - Transparent overlay discourages interacting with the SDK overflow menu.
 
 ### MoonPay API reference
 - The receipt URL is derived from the MoonPay transaction ID. See MoonPay docs for retrieving sell transactions by id/external id.
