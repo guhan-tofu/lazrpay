@@ -166,6 +166,32 @@
             left: 38px;
             color: #f59e0b;
         }
+        /* MoonPay Top Cover Overlay - adjustable height, responsive for mobile */
+        #moonpay-embed-container {
+            position: relative;
+        }
+        #moonpay-cover {
+            --moonpay-cover-height-desktop: 290px; /* Set your desktop cover height here */
+            --moonpay-cover-height-mobile: 60px; /* Set your mobile cover height here */
+            height: var(--moonpay-cover-height-desktop);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #f0e1ff;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 1;
+            transition: height 0.2s;
+        }
+        .dark #moonpay-cover {
+            background: #131327;
+        }
+        @media (max-width: 607px) {
+            #moonpay-cover {
+                height: var(--moonpay-cover-height-mobile);
+            }
+        }
     </style>
 </head>
 <body class="font-inter gradient-bg min-h-screen theme-transition">
@@ -243,51 +269,48 @@
                 </div>
             </div>
 
-            <!-- MoonPay Integration -->
-            <div class="glassmorphism rounded-3xl card-shadow p-8 max-w-2xl mx-auto hover-lift fade-in-section">
-                <div class="text-center mb-6">
-                    <h2 class="text-3xl font-bold text-lazr-purple dark:text-white mb-4">
-                        <i class="fas fa-rocket mr-3"></i>Complete Your Claim
+            <!-- MoonPay Integration (Refactored) -->
+            <div id="claim-action-container" class="glassmorphism rounded-2xl card-shadow p-6 max-w-md mx-auto hover-lift fade-in-section mb-0">
+                <div class="text-center mb-4">
+                    <h2 class="text-2xl font-bold text-lazr-purple dark:text-white mb-2">
+                        <i class="fas fa-rocket mr-2"></i>Complete Your Claim
                     </h2>
-                    <p class="text-gray-600 dark:text-gray-300">Click the button below to start the secure bank transfer process.</p>
-                </div>
-                
-                <!-- Check if transaction is already completed or processing -->
-                {% if transaction.status == 'completed' or transaction.status == 'processing' %}
-                    <div class="text-center">
-                        <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl p-6 mb-6">
-                            <i class="fas fa-check-circle text-2xl mb-3"></i>
+                    <p class="text-gray-600 dark:text-gray-300 text-base mb-4">Click the button below to start the secure bank transfer process.</p>
+                    {% if transaction.status == 'completed' or transaction.status == 'processing' %}
+                        <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl p-4 mb-4">
+                            <i class="fas fa-check-circle text-xl mb-2"></i>
                             {% if transaction.status == 'completed' %}
-                                <h3 class="text-xl font-bold mb-2">Transaction Already Completed</h3>
-                                <p>This transaction has already been claimed and completed. You cannot claim it again.</p>
+                                <h3 class="text-lg font-bold mb-1">Transaction Already Completed</h3>
+                                <p class="text-sm">This transaction has already been claimed and completed. You cannot claim it again.</p>
                             {% else %}
-                                <h3 class="text-xl font-bold mb-2">Transaction Processing</h3>
-                                <p>This transaction is currently being processed. Please wait, you cannot initiate it again.</p>
+                                <h3 class="text-lg font-bold mb-1">Transaction Processing</h3>
+                                <p class="text-sm">This transaction is currently being processed. Please wait, you cannot initiate it again.</p>
                             {% endif %}
                         </div>
                         <button 
-                            class="bg-gray-400 dark:bg-gray-600 text-white py-4 px-8 rounded-2xl font-semibold text-lg cursor-not-allowed inline-flex items-center justify-center mx-auto"
+                            class="bg-gray-400 dark:bg-gray-600 text-white py-3 px-6 rounded-2xl font-semibold text-base cursor-not-allowed inline-flex items-center justify-center mx-auto"
                             disabled
                         >
-                            <i class="fas fa-check mr-3"></i>
+                            <i class="fas fa-check mr-2"></i>
                             {% if transaction.status == 'completed' %}Already Claimed{% else %}Processing...{% endif %}
                         </button>
-                    </div>
-                {% else %}
-                    <div class="text-center">
+                    {% else %}
                         <button 
                             id="start-bank-transfer"
-                            class="button-gradient text-white py-4 px-8 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center mx-auto group"
+                            class="button-gradient text-white py-3 px-6 rounded-2xl font-semibold text-base transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center mx-auto group"
                         >
-                            <i class="fas fa-university mr-3 group-hover:translate-x-1 transition-transform"></i>
+                            <i class="fas fa-university mr-2 group-hover:translate-x-1 transition-transform"></i>
                             Start Bank Transfer
                         </button>
-                    </div>
-                {% endif %}
-                
-                <!-- Status Messages -->
+                    {% endif %}
+                </div>
+            </div>
+            <!-- MoonPay SDK Embed Container (hidden by default) -->
+            <div id="moonpay-sdk-outer" class="max-w-2xl mx-auto w-full fade-in-section" style="display:none; margin-top:0;">
+                <div id="moonpay-embed-container" class="rounded-2xl overflow-hidden" style="min-height: 1200px; width: 100%;">
+                    <div id="moonpay-cover"></div>
+                </div>
                 <div id="status" class="text-center mt-6"></div>
-                <div id="moonpay-embed-container" class="mt-8 rounded-2xl overflow-hidden" style="min-height: 1200px; width: 100%;"></div>
             </div>
         </div>
     </main>
@@ -312,6 +335,11 @@
         } else {
             // Only add event listener if transaction is not completed
             document.getElementById("start-bank-transfer").addEventListener("click", function () {
+                // Show the MoonPay SDK container
+                var moonpayOuter = document.getElementById('moonpay-sdk-outer');
+                if (moonpayOuter) {
+                    moonpayOuter.style.display = 'block';
+                }
                 // Get transaction details
                 var amount = "{% if transaction %}{{ transaction.amount }}{% else %}0{% endif %}";
                 var email = "{% if transaction %}{{ transaction.to_receiver.email }}{% else %}''{% endif %}";
@@ -488,10 +516,32 @@
         const currentTheme = localStorage.getItem('theme') || 'light';
         html.classList.toggle('dark', currentTheme === 'dark');
 
-        themeToggle.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
-            localStorage.setItem('theme', newTheme);
+        // Fix: Always ensure the theme toggle button is present and functional
+        function ensureThemeToggle() {
+            let header = document.querySelector('.sticky-header .flex');
+            let toggle = document.getElementById('theme-toggle');
+            if (!toggle) {
+                toggle = document.createElement('div');
+                toggle.className = 'theme-toggle';
+                toggle.id = 'theme-toggle';
+                header && header.appendChild(toggle);
+            }
+            // Remove all previous event listeners by replacing the node
+            let newToggle = toggle.cloneNode(true);
+            toggle.parentNode.replaceChild(newToggle, toggle);
+            newToggle.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+        // Call on load and after every theme change
+        ensureThemeToggle();
+        // Also call after DOMContentLoaded in case of late rendering
+        document.addEventListener('DOMContentLoaded', ensureThemeToggle);
+        // Patch the theme toggle logic to always call ensureThemeToggle
+        themeToggle && themeToggle.addEventListener('click', () => {
+            setTimeout(ensureThemeToggle, 10);
         });
 
         // Intersection Observer for fade-in animations
@@ -512,6 +562,20 @@
         document.querySelectorAll('.fade-in-section').forEach(section => {
             observer.observe(section);
         });
+
+        // Persistent MoonPay cover overlay (re-add if removed)
+        function ensureMoonpayCover() {
+            var container = document.getElementById('moonpay-embed-container');
+            if (!container) return;
+            var cover = document.getElementById('moonpay-cover');
+            if (!cover) {
+                cover = document.createElement('div');
+                cover.id = 'moonpay-cover';
+                container.insertBefore(cover, container.firstChild);
+            }
+        }
+        // Check every 500ms to ensure the cover exists
+        setInterval(ensureMoonpayCover, 500);
     </script>
 </body>
 </html> 
