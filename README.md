@@ -580,3 +580,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Tailwind CSS**: For the utility-first CSS framework
 
 
+# Solution to look into : Make it so theres only one button that makes the transaction as well as sends it in one go so you cant cancel midway.

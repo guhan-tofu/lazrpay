@@ -59,6 +59,12 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        #moonpay-embed-container iframe {
+            min-height: 1200px !important;
+            height: 1200px !important;
+            width: 100% !important;
+            border-radius: 16px;
+        }
         .dark .glassmorphism {
             background: rgba(26, 26, 46, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -281,6 +287,7 @@
                 
                 <!-- Status Messages -->
                 <div id="status" class="text-center mt-6"></div>
+                <div id="moonpay-embed-container" class="mt-8 rounded-2xl overflow-hidden" style="min-height: 1200px; width: 100%;"></div>
             </div>
         </div>
     </main>
@@ -320,36 +327,11 @@
                 if (typeof window.MoonPayWebSdk !== 'undefined') {
                     try {
                         const moonPay = window.MoonPayWebSdk.init;
-                        
-                        // Blocker helpers to prevent clicking the SDK's overflow menu (three dots)
-                        const blockerId = 'mp-menu-blocker';
-                        const addMenuBlocker = () => {
-                            if (document.getElementById(blockerId)) return;
-                            const blocker = document.createElement('div');
-                            blocker.id = blockerId;
-                            Object.assign(blocker.style, {
-                                position: 'fixed',
-                                // Adjust these values if the menu position changes across devices
-                                top: '8px',
-                                right: '8px',
-                                width: '84px',
-                                height: '84px',
-                                zIndex: '2147483647',
-                                background: 'transparent',
-                                pointerEvents: 'auto',
-                            });
-                            document.body.appendChild(blocker);
-                        };
-                        const removeMenuBlocker = () => {
-                            const el = document.getElementById(blockerId);
-                            if (el) el.remove();
-                        };
-
                         const widget = moonPay({
                             flow: "sell",
                             environment: "sandbox",
                             params: {
-                                apiKey: "{{ MOONPAY_API_KEY }}",
+                                apiKey: "pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz",
                                 baseCurrencyCode: "sol",
                                 baseCurrencyAmount: amount,
                                 defaultCurrencyCode: "usd",
@@ -358,7 +340,8 @@
                                 externalCustomerId: email,
                                 lockAmount: true  // Lock the amount so it doesn't change
                             },
-                            variant: "overlay",
+                            variant: "embedded",
+                            containerNodeSelector: "#moonpay-embed-container",
                             useWarnBeforeRefresh: false,
                             handlers: {
                                 onInitiateDeposit: function(depositDetails) {
@@ -427,7 +410,6 @@
                                     };
                                 },
                                 onTransactionCompleted: function(transaction) {
-                                    removeMenuBlocker();
                                     statusDiv.innerHTML = '<div class="mt-4 p-4 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-2xl">Transaction completed! Your money will be deposited to your bank account.</div>';
                                     try {
                                         var moonpayTxId = (transaction && (transaction.transactionId || transaction.id)) || null;
@@ -447,7 +429,6 @@
                                     } catch (e) {}
                                 },
                                 onCloseOverlay: function() {
-                                    removeMenuBlocker();
                                     try {
                                         if (txHash) {
                                             navigator.sendBeacon('/moonpay/abandon/', new Blob([JSON.stringify({ externalTransactionId: txHash })], { type: 'application/json' }));
@@ -459,8 +440,6 @@
 
                         // Show the widget
                         widget.show();
-                        // Prevent user from interacting with the overflow menu
-                        addMenuBlocker();
                         
                         // Remove loading message
                         var loadingMsg = statusDiv.querySelector('.bg-blue-100, .bg-blue-900');
