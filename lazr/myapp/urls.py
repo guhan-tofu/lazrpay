@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-
+# this is the main urls for myapp
 urlpatterns = [
     path("welcome", views.my_view, name="index"),
     path("real_home", views.real_home, name="real_home"),
@@ -18,9 +18,7 @@ urlpatterns = [
     path("recipient/by_email/<str:email>/", views.RecipientByEmailView.as_view(), name="get_recipient_by_email"),
     path("transaction/by_txid/<str:tx_hash>/", views.TransactionByIdView.as_view(), name="get_transaction_by_txid"),
     path("transaction/by_email/<str:to_receiver_email>/", views.TransactionByEmailListView.as_view(), name="get_transaction_by_email"),
-    # New non-breaking history endpoint
     path("transactions/history/<str:email>/", views.TransactionHistoryByEmailView.as_view(), name="transactions_history_by_email"),
-    # New utility endpoints
     path("moonpay/receipt/<str:external_id>/", views.moonpay_receipt, name="moonpay_receipt"),
     path("moonpay/map-transaction/", views.map_moonpay_transaction, name="map_moonpay_transaction"),
     path("update/status/<str:tx_hash>/", views.UpdateTransactionStatusView.as_view(), name="update_transaction_status"),
@@ -38,6 +36,3 @@ urlpatterns = [
     path("moonpay/test-notification/", views.test_moonpay_notification, name="test_moonpay_notification"),
     path("moonpay/abandon/", views.abandon_processing, name="abandon_processing"),
 ]
-
-# Compare this snippet from lazr/lazr/urls.py:
-# from django.contrib import admin

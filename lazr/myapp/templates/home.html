@@ -1,13 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
     <title>LAZRPAY - Send and Receive Crypto Instantly</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="index,follow">
+  <meta name="generator" content="GrapesJS Studio">
+  <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -20,10 +23,15 @@
                         'lazr-accent': '#6d28d9',
                         'dark-bg': '#0f0f23',
                         'dark-card': '#1a1a2e',
-                        'dark-text': '#e2e8f0'
+                        'dark-text': '#e2e8f0',
+                        'apple-green': '#eaffd0',
+                        'apple-btn': '#eaffd0',
+                        'apple-btn2': '#f6ffe7',
                     },
                     fontFamily: {
-                        'inter': ['Inter', 'sans-serif']
+                        'inter': [
+                            '-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Segoe UI', 'Roboto', 'Inter', 'sans-serif'
+                        ]
                     },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
@@ -53,408 +61,393 @@
             }
         }
     </script>
-    <style>
-        .glassmorphism {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .dark .glassmorphism {
-            background: rgba(26, 26, 46, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
-        }
-        .dark .gradient-bg {
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
-        }
-        .hero-gradient {
-            background: linear-gradient(135deg, #2b0a3d 0%, #1e0e62 100%);
-        }
-        .dark .hero-gradient {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
-        .card-shadow {
-            box-shadow: 0 20px 40px -12px rgba(109, 40, 217, 0.15);
-        }
-        .dark .card-shadow {
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
-        }
-        .button-gradient {
-            background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
-        }
-        .button-gradient:hover {
-            background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
-            transform: translateY(-4px);
-        }
-        .text-gradient {
-            background: linear-gradient(135deg, #d946ef 0%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .floating-card {
-            animation: float 6s ease-in-out infinite;
-        }
-        .hover-lift:hover {
-            transform: translateY(-8px);
-            transition: all 0.3s ease-in-out;
-        }
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            backdrop-filter: blur(20px);
-            background: rgba(43, 10, 61, 0.95);
-        }
-        .dark .sticky-header {
-            background: rgba(15, 15, 35, 0.95);
-        }
-        .theme-transition {
-            transition: all 0.3s ease-in-out;
-        }
-        .fade-in-section {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s ease-out;
-        }
-        .fade-in-section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        /* Theme Toggle Slider Styles */
-        .theme-toggle {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .theme-toggle::before {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 26px;
-            height: 26px;
-            background: white;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            z-index: 2;
-        }
-        .dark .theme-toggle::before {
-            transform: translateX(30px);
-        }
-        .theme-toggle::after {
-            content: '\f186';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            top: 50%;
-            left: 8px;
-            transform: translateY(-50%);
-            font-size: 12px;
-            transition: all 0.3s ease;
-            z-index: 1;
-            color: #fbbf24;
-        }
-        .dark .theme-toggle::after {
-            content: '\f185';
-            left: 38px;
-            color: #f59e0b;
-        }
-    </style>
-</head>
+  <style>
+    * {
+	box-sizing: border-box;
+}
 
-<body class="font-inter gradient-bg min-h-screen theme-transition">
+body {
+	margin: 0;
+}
+
+:root {
+	--gjs-t-color-primary: #cf549e;
+	--gjs-t-color-secondary: #b9227d;
+	--gjs-t-color-accent: #ffb347;
+	--gjs-t-color-success: #28a745;
+	--gjs-t-color-warning: #ffc107;
+	--gjs-t-color-error: #dc3545;
+}
+
+body {
+	background-color: #e7e7e7;
+	font-family: system-ui, sans-serif;
+}
+
+.gjs-t-body {
+	background-color: inherit;
+	color: inherit;
+	font-size: 1rem;
+	line-height: 1.75rem;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.gjs-t-h1 {
+	color: var(--gjs-t-color-secondary);
+	font-size: 1.5rem;
+	line-height: 2.5rem;
+}
+
+.gjs-t-h2 {
+	color: #601843;
+	font-size: 1.2rem;
+	line-height: 1.75rem;
+}
+
+.gjs-t-button {
+	background-color: var(--gjs-t-color-primary);
+	color: white;
+	border-radius: 0.3rem;
+}
+
+.gjs-t-link {
+	color: var(--gjs-t-color-primary);
+	text-decoration: underline;
+}
+
+.gjs-t-border {
+	border-radius: 0.3rem;
+	border-color: #e0e0e0;
+}
+
+body,
+html {
+	font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Segoe UI', 'Roboto', 'Inter', sans-serif;
+}
+
+.glassmorphism {
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(20px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glassmorphism {
+	background: rgba(26, 26, 46, 0.8);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gradient-bg {
+	background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+}
+
+.dark .gradient-bg {
+	background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+}
+
+.hero-gradient {
+	background: linear-gradient(135deg, #2b0a3d 0%, #1e0e62 100%);
+}
+
+.dark .hero-gradient {
+	background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.card-shadow {
+	box-shadow: 0 20px 40px -12px rgba(109, 40, 217, 0.15);
+}
+
+.dark .card-shadow {
+	box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+}
+
+.button-gradient {
+	border-radius: 9999px !important;
+	background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+}
+
+.button-gradient:hover {
+	background: linear-gradient(135deg, #c026d3 0%, #a21caf 100%);
+	transform: translateY(-4px);
+}
+
+.text-gradient {
+	background: linear-gradient(135deg, #d946ef 0%, #8b5cf6 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.floating-card {
+	animation: float 6s ease-in-out infinite;
+}
+
+.hover-lift:hover {
+	transform: translateY(-8px);
+	transition: all 0.3s ease-in-out;
+}
+
+.sticky-header {
+	position: sticky;
+	top: 0;
+	z-index: 50;
+	backdrop-filter: blur(20px);
+	background: rgba(43, 10, 61, 0.95);
+}
+
+.dark .sticky-header {
+	background: rgba(15, 15, 35, 0.95);
+}
+
+.theme-transition {
+	transition: all 0.3s ease-in-out;
+}
+
+.fade-in-section {
+	opacity: 0;
+	transform: translateY(30px) scale(0.98);
+	transition: all 0.7s cubic-bezier(.4, 0, .2, 1);
+}
+
+.fade-in-section.visible {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+}
+
+.theme-toggle {
+	position: relative;
+	width: 60px;
+	height: 30px;
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 15px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.theme-toggle::before {
+	content: '';
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 26px;
+	height: 26px;
+	background: white;
+	border-radius: 50%;
+	transition: all 0.3s ease;
+	z-index: 2;
+}
+
+.dark .theme-toggle::before {
+	transform: translateX(30px);
+}
+
+.theme-toggle::after {
+	content: '\f186';
+	font-family: 'Font Awesome 6 Free';
+	font-weight: 900;
+	position: absolute;
+	top: 50%;
+	left: 8px;
+	transform: translateY(-50%);
+	font-size: 12px;
+	transition: all 0.3s ease;
+	z-index: 1;
+	color: #fbbf24;
+}
+
+.dark .theme-toggle::after {
+	content: '\f185';
+	left: 38px;
+	color: #f59e0b;
+}
+
+.apple-hero-bg {
+	background: #eaffd0;
+	border-radius: 2.5rem;
+	width: 340px;
+	height: 420px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 0;
+}
+
+#iijbn1 {
+	animation-delay: 0.1s;
+}
+
+#i71b22 {
+	animation-delay: 0.2s;
+}
+
+#ib9211 {
+	animation-delay: 0.3s;
+}
+
+#ikkxd {
+	padding-top: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+	padding-left: 0px;
+}
+
+#i9fae {
+	width: 510px;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.5) 1%, rgba(0, 0, 0, 0.5) 100%);
+	background-position: 0px 0px;
+	background-size: 100% 100%;
+	background-color: rgba(168, 113, 255, 1);
+	left: 48%;
+}
+
+#i9fae-5 {
+	width: 30px;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.5) 1%, rgba(0, 0, 0, 0.5) 100%);
+	background-position: 0px 0px;
+	background-size: 100% 100%;
+	background-color: rgba(168, 113, 255, 1);
+	height: 30px;
+	margin-top: 0px;
+	margin-right: 204px;
+	margin-bottom: 271px;
+	margin-left: 332px;
+	top: 10%;
+	right: 0px;
+	left: 146%;
+}
+
+#i9fae-5-2 {
+	width: 50px;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.5) 1%, rgba(0, 0, 0, 0.5) 100%);
+	background-position: 0px 0px;
+	background-size: 100% 100%;
+	background-color: rgba(168, 113, 255, 1);
+	height: 50px;
+	padding-top: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+	padding-left: 7px;
+	margin-top: 233px;
+	margin-right: 252px;
+	margin-bottom: 271px;
+	margin-left: 51px;
+	left: 46%;
+	top: 49%;
+}
+
+#i28xt9 {
+	position: absolute;
+	bottom: 0px;
+	left: 0%;
+	border-top-width: 0px;
+	border-right-width: 0px;
+	border-bottom-width: 0px;
+	border-left-width: 0px;
+	border-top-left-radius: 40px;
+	border-top-right-radius: 40px;
+	border-bottom-left-radius: 40px;
+	border-bottom-right-radius: 40px;
+}
+#i9fae img {
+    position: relative;
+    transform: scale(1.15); 
+    top: -182px;            
+    left: 30px;  
+	border-radius: 40px;           
+}
+
+#avatar1, #avatar2, #avatar3, #avatar4 {
+    background-size: cover;       /* Ensures the image covers the whole circle */
+    background-position: center;  /* Centers the image */
+}
+
+#avatar1 { background-image: url('https://i.ibb.co/fGtgTYHL/Screenshot-2025-08-23-181015.png'); }
+#avatar2 { background-image: url('https://i.ibb.co/tP31Gv5N/Screenshot-2025-08-23-180959.png'); }
+#avatar3 { background-image: url('https://i.ibb.co/n44mwBT/Screenshot-2025-08-23-180942.png'); }
+#avatar4 { background-image: url('https://i.ibb.co/XkMVWdjy/Screenshot-2025-08-23-180654.png'); }
+
+@media (max-width:1024px) {
+	.apple-hero-bg {
+		width: 260px;
+		height: 320px;
+	}
+}
+
+@media (max-width:640px) {
+	.apple-hero-bg {
+		width: 180px;
+		height: 200px;
+	}
+}
+  </style>
+  </head>
+  <body id="imfi" class="font-inter gradient-bg min-h-screen theme-transition">
     {% load socialaccount %}
-    
-    <!-- Header -->
-    <header class="sticky-header text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-4">
-                <!-- Left: Logo -->
-                <div class="flex items-center space-x-3">
-                    <a href="{% url 'home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity group">
-                        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                            <i class="fas fa-bolt text-lazr-purple text-lg"></i>
-                        </div>
-                        <span class="text-2xl font-bold">LAZRPAY</span>
-                    </a>
-                </div>
-                
-                <!-- Center: User Info -->
+    <header class="sticky-header text-white shadow-lg"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="flex justify-between items-center py-4"><div class="flex items-center space-x-3"><a href="{% url 'home' %}" class="flex items-center space-x-3 hover:opacity-80 transition-opacity group"><div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300"><i class="fas fa-bolt text-lazr-purple text-lg"></i></div><span class="text-2xl font-bold">LAZRPAY</span></a></div>
                 {% if user.is_authenticated %}
-                <div class="hidden md:flex items-center space-x-3 text-sm text-gray-300">
-                    <i class="fas fa-user-circle text-lazr-pink"></i>
-                    <span>Logged in as: {{ user.email|truncatechars:20 }}</span>
-                </div>
+                <div class="hidden md:flex items-center space-x-3 text-sm text-gray-300"><i class="fas fa-user-circle text-lazr-pink"></i><span>Logged in as: {{ user.email|truncatechars:20 }}</span></div>
                 {% endif %}
-                
-                <!-- Right: Navigation and Theme Toggle -->
-                <div class="flex items-center space-x-6">
-                <nav class="hidden md:flex items-center space-x-8">
+                <div class="flex items-center space-x-6"><nav class="hidden md:flex items-center space-x-8">
                     {% if user.is_authenticated %}
-                            <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium relative group">
-                                <i class="fas fa-paper-plane mr-2"></i>Send
-                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-lazr-pink transition-all duration-300 group-hover:w-full"></span>
-                            </a>
-                            <a href="{% url 'receive_main' %}" class="text-white hover:text-lazr-pink transition-colors font-medium relative group">
-                                <i class="fas fa-download mr-2"></i>Receive
-                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-lazr-pink transition-all duration-300 group-hover:w-full"></span>
-                            </a>
-                            <a href="{% url 'logout' %}" class="button-gradient text-white px-6 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105">
-                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            <a href="{% url 'index' %}" class="text-white hover:text-lazr-pink transition-colors font-medium relative group"><i class="fas fa-paper-plane mr-2"></i>Send
+                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-lazr-pink transition-all duration-300 group-hover:w-full"></span></a><a href="{% url 'receive_main' %}" class="text-white hover:text-lazr-pink transition-colors font-medium relative group"><i class="fas fa-download mr-2"></i>Receive
+                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-lazr-pink transition-all duration-300 group-hover:w-full"></span></a><a href="{% url 'logout' %}" class="button-gradient text-white px-6 py-2 font-semibold rounded-full transition-all duration-300 hover:shadow-lg hover:scale-105"><i class="fas fa-sign-out-alt mr-2"></i>Logout
                             </a>
                     {% else %}
-                            <a href="{% provider_login_url 'google' %}" class="button-gradient text-white px-6 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105">
-                                <i class="fab fa-google mr-2"></i>Sign in with Google
+                            <a href="{% provider_login_url 'google' %}" class="button-gradient text-white px-6 py-2 font-semibold rounded-full transition-all duration-300 hover:shadow-lg hover:scale-105"><i class="fab fa-google mr-2"></i>Sign in with Google
                             </a>
                     {% endif %}
-                </nav>
-
-                    <!-- Dark Mode Toggle Slider -->
-                    <div class="theme-toggle" id="theme-toggle"></div>
-                
-                <!-- Mobile menu button -->
-                <div class="md:hidden">
-                    <button class="text-white hover:text-lazr-pink transition-colors">
-                            <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero-gradient text-white py-20 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-lazr-purple/50 to-lazr-pink/30"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <div class="space-y-8 fade-in-section">
-                    <h1 class="text-6xl lg:text-7xl font-black leading-tight">
+                </nav><div id="theme-toggle" class="theme-toggle"></div><div class="md:hidden"><button type="button" class="text-white hover:text-lazr-pink transition-colors"><i class="fas fa-bars text-xl"></i></button></div></div></div></div></header><section class="hero-gradient text-white py-20 relative overflow-hidden"><div id="i9fae-5-2" class="apple-hero-bg"><div id="iwrx1-6-2" class="relative z-10 floating-card"></div></div><div id="i7tgk" class="absolute inset-0 bg-gradient-to-r from-lazr-purple/50 to-lazr-pink/30"></div><div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" id="ie5nw"><div id="iakvi" class="grid lg:grid-cols-2 gap-12 items-center"><div id="ikkxd" class="space-y-8 fade-in-section"><h1 id="iu447" class="text-6xl lg:text-7xl font-black leading-tight">
                         Send and Receive 
                         <span class="text-gradient">Crypto</span> 
                         Instantly
-                    </h1>
-                    <p class="text-xl text-gray-200 leading-relaxed">
+                    </h1><p class="text-xl text-gray-200 leading-relaxed">
                         LAZRPAY lets you transfer cryptocurrency across borders in seconds. 
                         No wallet? No problem. Experience the future of digital payments.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="{% url 'index' %}" class="button-gradient text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center group">
-                            <i class="fas fa-paper-plane mr-3 group-hover:translate-x-1 transition-transform"></i>
+                    </p><div id="i9fae-5" class="apple-hero-bg"></div><div id="iwwab" class="flex flex-col sm:flex-row gap-4"><a href="{% url 'index' %}" class="button-gradient text-white px-8 py-4 font-semibold rounded-full text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center group"><i class="fas fa-paper-plane mr-3 group-hover:translate-x-1 transition-transform"></i>
                             Send Crypto
-                        </a>
-                        <a href="{% url 'receive_main' %}" class="glassmorphism text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center group border border-white/20">
-                            <i class="fas fa-download mr-3 group-hover:translate-y-1 transition-transform"></i>
+                        </a><a href="{% url 'receive_main' %}" class="glassmorphism text-white px-8 py-4 font-semibold rounded-full text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center group border border-white/20"><i class="fas fa-download mr-3 group-hover:translate-y-1 transition-transform"></i>
                             Claim Crypto
-                        </a>
-                    </div>
-                </div>
-                <div class="flex justify-center lg:justify-end">
-                    <div class="relative floating-card">
-                        <div class="absolute inset-0 bg-lazr-pink rounded-3xl transform rotate-6 opacity-20 animate-pulse-glow"></div>
-                        <img src="https://i.ibb.co/HTFfSD1f/May-13-2025-at-08-51-19-PM.png" 
-                             alt="LAZRPAY App" 
-                             class="relative rounded-3xl shadow-2xl max-w-md w-full hover-lift">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section class="py-20 bg-white dark:bg-dark-card theme-transition">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 fade-in-section">
-                <h2 class="text-5xl font-black text-lazr-purple dark:text-white mb-4">How It Works</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                        </a></div><div class="flex items-center space-x-3 mt-8"></div><div class="flex items-center space-x-3 mt-6"><span class="text-lg font-semibold">Millions of people love it </span><div class="flex -space-x-2"><span id="avatar1" class="inline-block w-8 h-8 rounded-full border-2 border-white"></span><span id="avatar2" class="inline-block w-8 h-8 rounded-full border-2 border-white"></span><span id="avatar3" class="inline-block w-8 h-8 rounded-full border-2 border-white"></span><span id="avatar4" class="inline-block w-8 h-8 rounded-full border-2 border-white"></span></div><span class="text-gray-200 text-base font-medium ml-2">1.5M users</span></div></div><div id="ielq7" class="flex justify-center lg:justify-end relative"><div id="i9fae" class="apple-hero-bg"><img src="{% static 'myapp/images/hero_image.png' %}" alt="LAZRPAY App" class="relative rounded-3xl max-w-md w-full"></div></div></div></section><section class="py-20 bg-white dark:bg-dark-card theme-transition" id="i3lup"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="text-center mb-16 fade-in-section"><h2 class="text-5xl font-black text-lazr-purple dark:text-white mb-4">How It Works</h2><p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                     Get started with LAZRPAY in just three simple steps
-                </p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Step 1 -->
-                <div class="text-center group fade-in-section" style="animation-delay: 0.1s">
-                    <div class="w-24 h-24 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                        <i class="fas fa-paper-plane text-2xl text-lazr-purple group-hover:text-white transition-colors"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-lazr-purple dark:text-white mb-3">Send</h3>
-                    <p class="text-gray-600 dark:text-gray-300">Choose a crypto and enter the recipient's email or wallet address.</p>
-                </div>
-                
-                <!-- Step 2 -->
-                <div class="text-center group fade-in-section" style="animation-delay: 0.2s">
-                    <div class="w-24 h-24 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                        <i class="fas fa-envelope text-2xl text-lazr-purple group-hover:text-white transition-colors"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-lazr-purple dark:text-white mb-3">Notify</h3>
-                    <p class="text-gray-600 dark:text-gray-300">They get notified instantly with a secure claim link via email.</p>
-                </div>
-                
-                <!-- Step 3 -->
-                <div class="text-center group fade-in-section" style="animation-delay: 0.3s">
-                    <div class="w-24 h-24 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                        <i class="fas fa-download text-2xl text-lazr-purple group-hover:text-white transition-colors"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-lazr-purple dark:text-white mb-3">Receive</h3>
-                    <p class="text-gray-600 dark:text-gray-300">Funds arrive in their wallet or new LAZRPAY account instantly.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="py-20 gradient-bg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <div class="fade-in-section">
-                    <h2 class="text-5xl font-black text-lazr-purple dark:text-white mb-8">Why Choose LAZRPAY?</h2>
-                    <div class="space-y-8">
-                        <div class="flex items-start space-x-6 group">
-                            <div class="w-12 h-12 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                <i class="fas fa-bolt text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-lazr-purple dark:text-white mb-3">Lightning Fast</h3>
-                                <p class="text-gray-600 dark:text-gray-300">Complete transactions in seconds, not minutes or hours.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start space-x-6 group">
-                            <div class="w-12 h-12 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                <i class="fas fa-shield-alt text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-lazr-purple dark:text-white mb-3">Secure & Reliable</h3>
-                                <p class="text-gray-600 dark:text-gray-300">Bank-grade security with blockchain technology protection.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start space-x-6 group">
-                            <div class="w-12 h-12 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                <i class="fas fa-globe text-white text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-lazr-purple dark:text-white mb-3">Global Access</h3>
-                                <p class="text-gray-600 dark:text-gray-300">Send money anywhere in the world without borders or restrictions.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="glassmorphism rounded-3xl card-shadow p-8 hover-lift fade-in-section">
-                    <h3 class="text-3xl font-bold text-lazr-purple dark:text-white mb-6">Ready to Get Started?</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-8">Join thousands of users who trust LAZRPAY for their crypto transactions.</p>
-                    <a href="{% provider_login_url 'google' %}" class="button-gradient text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center w-full group">
-                        <i class="fab fa-google mr-3 group-hover:scale-110 transition-transform"></i>
+                </p></div><div class="grid md:grid-cols-3 gap-8"><div id="iijbn1" class="text-center group fade-in-section"><div class="w-24 h-24 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg"><i class="fas fa-paper-plane text-2xl text-lazr-purple group-hover:text-white transition-colors"></i></div><h3 class="text-2xl font-bold text-lazr-purple dark:text-white mb-3">Send</h3><p class="text-gray-600 dark:text-gray-300">Choose a crypto and enter the recipient's email or wallet address.</p></div><div id="i71b22" class="text-center group fade-in-section"><div class="w-24 h-24 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg"><i class="fas fa-envelope text-2xl text-lazr-purple group-hover:text-white transition-colors"></i></div><h3 class="text-2xl font-bold text-lazr-purple dark:text-white mb-3">Notify</h3><p class="text-gray-600 dark:text-gray-300">They get notified instantly with a secure claim link via email.</p></div><div id="ib9211" class="text-center group fade-in-section"><div class="w-24 h-24 bg-gradient-to-br from-lazr-light-purple to-lazr-pink rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg"><i class="fas fa-download text-2xl text-lazr-purple group-hover:text-white transition-colors"></i></div><h3 class="text-2xl font-bold text-lazr-purple dark:text-white mb-3">Receive</h3><p class="text-gray-600 dark:text-gray-300">Funds arrive in their wallet or new LAZRPAY account instantly.</p></div></div></div></section><section class="py-20 gradient-bg" id="i5ey3c"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="grid lg:grid-cols-2 gap-12 items-center"><div class="fade-in-section"><h2 class="text-5xl font-black text-lazr-purple dark:text-white mb-8">Why Choose LAZRPAY?</h2><div class="space-y-8"><div class="flex items-start space-x-6 group"><div class="w-12 h-12 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition-transform duration-300 shadow-lg"><i class="fas fa-bolt text-white text-lg"></i></div><div><h3 class="text-xl font-bold text-lazr-purple dark:text-white mb-3">Lightning Fast</h3><p class="text-gray-600 dark:text-gray-300">Complete transactions in seconds, not minutes or hours.</p></div></div><div class="flex items-start space-x-6 group"><div class="w-12 h-12 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition-transform duration-300 shadow-lg"><i class="fas fa-shield-alt text-white text-lg"></i></div><div><h3 class="text-xl font-bold text-lazr-purple dark:text-white mb-3">Secure &amp; Reliable</h3><p class="text-gray-600 dark:text-gray-300">Bank-grade security with blockchain technology protection.</p></div></div><div class="flex items-start space-x-6 group"><div class="w-12 h-12 bg-gradient-to-br from-lazr-pink to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition-transform duration-300 shadow-lg"><i class="fas fa-globe text-white text-lg"></i></div><div><h3 class="text-xl font-bold text-lazr-purple dark:text-white mb-3">Global Access</h3><p class="text-gray-600 dark:text-gray-300">Send money anywhere in the world without borders or restrictions.</p></div></div></div></div><div class="glassmorphism rounded-3xl card-shadow p-8 hover-lift fade-in-section"><h3 class="text-3xl font-bold text-lazr-purple dark:text-white mb-6">Ready to Get Started?</h3><p class="text-gray-600 dark:text-gray-300 mb-8">Join thousands of users who trust LAZRPAY for their crypto transactions.</p><a href="{% provider_login_url 'google' %}" class="button-gradient text-white px-8 py-4 font-semibold rounded-full text-lg transition-all duration-300 hover:shadow-lg hover:scale-105 inline-flex items-center justify-center w-full group"><i class="fab fa-google mr-3 group-hover:scale-110 transition-transform"></i>
                         Sign in with Google
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-lazr-purple dark:bg-dark-bg text-white py-12 theme-transition">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-4 gap-8">
-                <div class="col-span-2">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center">
-                            <i class="fas fa-bolt text-lazr-purple text-lg"></i>
-                        </div>
-                        <span class="text-2xl font-bold">LAZRPAY</span>
-                    </div>
-                    <p class="text-gray-300 mb-6 max-w-md">
+                    </a></div></div></div></section><footer class="bg-lazr-purple dark:bg-dark-bg text-white py-12 theme-transition"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="grid md:grid-cols-4 gap-8"><div class="col-span-2"><div class="flex items-center space-x-3 mb-6"><div class="w-10 h-10 bg-white rounded-2xl flex items-center justify-center"><i class="fas fa-bolt text-lazr-purple text-lg"></i></div><span class="text-2xl font-bold">LAZRPAY</span></div><p class="text-gray-300 mb-6 max-w-md">
                         The future of digital payments. Send and receive cryptocurrency instantly across borders with unmatched security and speed.
-                    </p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-lazr-pink transition-colors duration-300">
-                            <i class="fab fa-twitter text-white"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-lazr-pink transition-colors duration-300">
-                            <i class="fab fa-linkedin text-white"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-lazr-pink transition-colors duration-300">
-                            <i class="fab fa-github text-white"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div>
-                    <h4 class="text-lg font-semibold mb-6">Product</h4>
-                    <ul class="space-y-3 text-gray-300">
-                        <li><a href="{% url 'index' %}" class="hover:text-white transition-colors flex items-center"><i class="fas fa-paper-plane mr-2"></i>Send Crypto</a></li>
-                        <li><a href="{% url 'receive_main' %}" class="hover:text-white transition-colors flex items-center"><i class="fas fa-download mr-2"></i>Receive Crypto</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center" onclick="changeText(this)"><i class="fas fa-shield-alt mr-2"></i><span>Security</span></a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="text-lg font-semibold mb-6">Company</h4>
-                    <ul class="space-y-3 text-gray-300">
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center" onclick="changeText(this)"><i class="fas fa-info-circle mr-2"></i><span>About</span></a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center" onclick="changeText(this)"><i class="fas fa-headset mr-2"></i><span>Support</span></a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center" onclick="changeText(this)"><i class="fas fa-envelope mr-2"></i><span>Contact</span></a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-                <p>&copy; 2025 LAZRPAY. All rights reserved.</p>
-                <p class="mt-2">Made By Sri Guhan and Avighna Basak</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Dark Mode Toggle Script -->
-    <script>
-        // Dark mode toggle functionality
+                    </p><div class="flex space-x-4"><a href="#" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-lazr-pink transition-colors duration-300"><i class="fab fa-twitter text-white"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-lazr-pink transition-colors duration-300"><i class="fab fa-linkedin text-white"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-lazr-pink transition-colors duration-300"><i class="fab fa-github text-white"></i></a></div></div><div><h4 class="text-lg font-semibold mb-6">Product</h4><ul class="space-y-3 text-gray-300"><li><a href="{% url 'index' %}" class="hover:text-white transition-colors flex items-center"><i class="fas fa-paper-plane mr-2"></i>Send Crypto</a></li><li><a href="{% url 'receive_main' %}" class="hover:text-white transition-colors flex items-center"><i class="fas fa-download mr-2"></i>Receive Crypto</a></li><li><a href="#" class="hover:text-white transition-colors flex items-center"><i class="fas fa-shield-alt mr-2"></i><span>Security</span></a></li></ul></div><div><h4 class="text-lg font-semibold mb-6">Company</h4><ul class="space-y-3 text-gray-300"><li><a href="#" class="hover:text-white transition-colors flex items-center"><i class="fas fa-info-circle mr-2"></i><span>About</span></a></li><li><a href="#" class="hover:text-white transition-colors flex items-center"><i class="fas fa-headset mr-2"></i><span>Support</span></a></li><li><a href="#" class="hover:text-white transition-colors flex items-center"><i class="fas fa-envelope mr-2"></i><span>Contact</span></a></li></ul></div></div><div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300"><p>© 2025 LAZRPAY. All rights reserved.</p><p class="mt-2">Made By Sri Guhan and Avighna Basak</p></div></div></footer><script>
+        // this is for dark mode toggle
         const themeToggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
-
-        // Check for saved theme preference or default to light mode
         const currentTheme = localStorage.getItem('theme') || 'light';
         html.classList.toggle('dark', currentTheme === 'dark');
-
         themeToggle.addEventListener('click', () => {
             html.classList.toggle('dark');
             const newTheme = html.classList.contains('dark') ? 'dark' : 'light';
             localStorage.setItem('theme', newTheme);
         });
-
-        // Function to change text to "sybau"
+        // this is for fade in animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                } else {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.fade-in-section').forEach(section => {
+            observer.observe(section);
+        });
+        // this is for changing text on click
         function changeText(element) {
             const span = element.querySelector('span');
             if (span && span.textContent !== 'sybau') {
                 span.textContent = 'sybau';
             }
         }
-
-        // Intersection Observer for fade-in animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
-
-        // Observe all fade-in sections
-        document.querySelectorAll('.fade-in-section').forEach(section => {
-            observer.observe(section);
-        });
-    </script>
-</body>
+    </script></body>
 </html>

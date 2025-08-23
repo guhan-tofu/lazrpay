@@ -4,35 +4,23 @@ from email.mime.multipart import MIMEMultipart
 import smtplib
 import os
 from django.template.loader import render_to_string
-
-# Load variables from .env
 load_dotenv()
-
-
+# this sends an email to user
 def send_email(user_email):
     sender_email = os.getenv("GMAIL_ADDRESS")
     app_password = os.getenv("GMAIL_APP_PASSWORD")
-
     if not sender_email or not app_password:
         return
-
     subject = "You've received crypto on LazrPay!"
-
-    # Read the HTML template from file
     try:
         html_content = render_to_string("email.html")
     except FileNotFoundError:
         return
-
-    # Create MIME email
     msg = MIMEMultipart("alternative")
     msg["From"] = sender_email
     msg["To"] = user_email
     msg["Subject"] = subject
-
-    # Attach HTML content
     msg.attach(MIMEText(html_content, "html"))
-
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender_email, app_password)
