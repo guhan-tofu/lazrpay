@@ -7,3 +7,5 @@ django-cors-headers
 django-allauth
 requests
 python-dotenv
+cryptography
+base58
