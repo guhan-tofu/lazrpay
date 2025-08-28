@@ -357,9 +357,9 @@
                         const moonPay = window.MoonPayWebSdk.init;
                         const widget = moonPay({
                             flow: "sell",
-                            environment: "sandbox",
+                            environment: "{{ MOONPAY_ENVIRONMENT|default:'production' }}",
                             params: {
-                                apiKey: "pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz",
+                                apiKey: "{{ MOONPAY_API_KEY|default:'pk_live_your_production_api_key' }}",
                                 baseCurrencyCode: "sol",
                                 baseCurrencyAmount: amount,
                                 defaultCurrencyCode: "usd",

@@ -461,8 +461,13 @@
                     return;
                 }
 
-                // Create transaction
-                const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+                // PRODUCTION ONLY - Always use Solana Mainnet
+                const heliusApiKey = "{{ HELIUS_API_KEY }}";
+                if (!heliusApiKey) {
+                    alert("Configuration Error: Helius API key not available");
+                    return;
+                }
+                const connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${heliusApiKey}`, "confirmed");
                 const transaction = new Transaction();
                 
                 // Add transfer instruction

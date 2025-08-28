@@ -1,4 +1,4 @@
-# 🚀 LAZRPAY (updated-23/8/24)
+# 🚀 LAZRPAY - Production (updated-28/8/24)
 
 > **A Modern, Decentralized Payment Platform Built on Solana Blockchain**
 
@@ -173,14 +173,14 @@ SECRET_KEY=your-secret-key-here
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Solana Configuration
-PRIVATE_KEY_BASE58=your-solana-private-key-base58
-SOLANA_NETWORK=devnet
+# Solana Configuration (PRODUCTION ONLY)
+PRIVATE_KEY_BASE58=your-solana-mainnet-private-key-base58
+HELIUS_API_KEY=your-helius-rpc-api-key
 
-# MoonPay Configuration
-MOONPAY_API_KEY=pk_test_your_public_key
-MOONPAY_SECRET_KEY=your-moonpay-secret-key
-MOONPAY_WEBHOOK_SECRET=your-webhook-secret
+# MoonPay Configuration (PRODUCTION ONLY)
+MOONPAY_API_KEY=pk_live_your_production_public_key
+MOONPAY_SECRET_KEY=sk_live_your_production_secret_key
+MOONPAY_WEBHOOK_SECRET=your-production-webhook-secret
 
 # Google OAuth
 GOOGLE_CLIENT_ID=your-google-client-id
@@ -211,8 +211,9 @@ Visit `http://127.0.0.1:8000` to access the application.
 | `DJANGO_SECRET_KEY` | Django secret key (preferred) | `django-insecure-...` |
 | `SECRET_KEY` | Django secret key (fallback) | `django-insecure-...` |
 | `PRIVATE_KEY_BASE58` | Solana wallet private key | `4xQy...` |
-| `MOONPAY_API_KEY` | MoonPay public API key | `pk_test_...` |
-| `MOONPAY_SECRET_KEY` | MoonPay secret key (server-to-server) | `sk_test_...` |
+| `HELIUS_API_KEY` | Helius RPC API key for Solana mainnet | `fb1c83ac-db8b-4b03-8a65-3925acdf90e9` |
+| `MOONPAY_API_KEY` | MoonPay public API key (PRODUCTION ONLY) | `pk_live_...` |
+| `MOONPAY_SECRET_KEY` | MoonPay secret key (PRODUCTION ONLY) | `sk_live_...` |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | `123456789.apps.googleusercontent.com` |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | `xxxxx` |
 | `GMAIL_ADDRESS` | Gmail address used to send emails | `lazrpay@gmail.com` |
@@ -235,21 +236,49 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 GMAIL_ADDRESS=your-email@gmail.com
 GMAIL_APP_PASSWORD=your-gmail-app-password
 
-# Solana
-PRIVATE_KEY_BASE58=your-solana-private-key-base58
-SOLANA_NETWORK=devnet
+# Solana (PRODUCTION ONLY)
+PRIVATE_KEY_BASE58=your-solana-mainnet-private-key-base58
+HELIUS_API_KEY=your-helius-rpc-api-key
 
-# MoonPay
-MOONPAY_API_KEY=pk_test_your_public_key
-MOONPAY_SECRET_KEY=sk_test_your_secret_key
+# MoonPay (PRODUCTION ONLY)  
+MOONPAY_API_KEY=pk_live_your_production_public_key
+MOONPAY_SECRET_KEY=sk_live_your_production_secret_key
 ```
 
 > For receipt links to work, ensure `MOONPAY_SECRET_KEY` is set for the same MoonPay project where the transaction was created (sandbox vs. production).
 
 ### Solana Network Configuration
 
-- **Devnet**: For testing and development
-- **Mainnet**: For production transactions
+**🚨 PRODUCTION ONLY MODE**: This system is hardcoded to use **Solana Mainnet only**. All transactions use real SOL.
+
+- **Mainnet**: ✅ Only supported network - for production transactions with real SOL
+- **Devnet**: ❌ Not supported - system enforces production mode only
+
+### 🚀 Production Setup Requirements
+
+**Before going live, ensure you have:**
+
+1. **Solana Mainnet Wallet**: 
+   - Generate a new wallet with sufficient SOL for transaction fees
+   - Keep private key secure and never commit to version control
+   - Fund wallet with SOL for gas fees
+
+2. **MoonPay Production Account**:
+   - Complete MoonPay business verification 
+   - Obtain production API keys (`pk_live_` and `sk_live_`)
+   - Set up production webhooks
+   - Complete compliance requirements
+
+3. **Environment Variables**:
+   ```env
+   # SOLANA_NETWORK not needed - hardcoded to mainnet
+   # MOONPAY_ENVIRONMENT not needed - hardcoded to production
+   MOONPAY_API_KEY=pk_live_your_key      # MUST be pk_live_ (production)
+   MOONPAY_SECRET_KEY=sk_live_your_key   # MUST be sk_live_ (production)
+   PRIVATE_KEY_BASE58=your_mainnet_key   # Mainnet wallet private key
+   ```
+
+**🚨 CRITICAL**: Test/sandbox keys (`pk_test_`, `sk_test_`) are automatically rejected.
 
 ## 📱 Usage
 
@@ -377,12 +406,12 @@ MOONPAY_SECRET_KEY=sk_test_your_secret_key
 ### Technical Implementation
 
 ```javascript
-// MoonPay SDK Integration
+// MoonPay SDK Integration - PRODUCTION ONLY
 const widget = moonPay({
     flow: "sell",
-    environment: "sandbox",
+    environment: "production", // Hardcoded to production only
     params: {
-        apiKey: "<your-moonpay-public-api-key>",
+        apiKey: "pk_live_your_production_api_key", // MUST be pk_live_ (production)
         baseCurrencyCode: "sol",
         baseCurrencyAmount: amount,
         defaultCurrencyCode: "inr",

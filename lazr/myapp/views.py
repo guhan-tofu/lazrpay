@@ -28,11 +28,32 @@ from solana.transaction import Transaction as SolanaTransaction
 from solana.system_program import transfer, TransferParams
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
-load_dotenv()
+# Load environment variables from .env file in project root
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'))
 # this sets up the solana keypair
 PRIVATE_KEY_BASE58 = os.getenv("PRIVATE_KEY_BASE58")
 private_key_bytes = base58.b58decode(PRIVATE_KEY_BASE58)
 keypair = Keypair.from_secret_key(private_key_bytes)
+
+# Helper function to get MoonPay API base URL - PRODUCTION ONLY
+def get_moonpay_api_url():
+    return "https://api.moonpay.com"  # Production URL only
+
+# Validate that only production API keys are used
+def validate_production_keys():
+    """Validate that only production keys are configured."""
+    moonpay_api_key = os.getenv('MOONPAY_API_KEY', '')
+    moonpay_secret_key = os.getenv('MOONPAY_SECRET_KEY', '')
+    
+    if moonpay_api_key.startswith('pk_test_'):
+        raise ValueError("PRODUCTION ONLY: Test API key detected. Use pk_live_ keys only.")
+    if moonpay_secret_key.startswith('sk_test_'):
+        raise ValueError("PRODUCTION ONLY: Test secret key detected. Use sk_live_ keys only.")
+    
+    if not moonpay_api_key.startswith('pk_live_'):
+        raise ValueError("PRODUCTION ONLY: Invalid API key format. Must start with pk_live_")
+    if not moonpay_secret_key.startswith('sk_live_'):
+        raise ValueError("PRODUCTION ONLY: Invalid secret key format. Must start with sk_live_")
 def render_forbidden(request, message="Access forbidden"):
     response = render(request, 'forbidden.html')
     response.status_code = 403
@@ -47,7 +68,22 @@ def render_forbidden(request, message="Access forbidden"):
     return response
 # this is the main view for index
 def my_view(request):
-    return render(request, 'index.html')
+    # PRODUCTION ONLY - Pass Helius API key for frontend
+    helius_api_key = os.getenv('HELIUS_API_KEY', '')
+    
+    # Debug: Check if environment variable is loaded
+    if not helius_api_key:
+        # Try to reload .env and check again
+        load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'), override=True)
+        helius_api_key = os.getenv('HELIUS_API_KEY', '')
+        
+        if not helius_api_key:
+            return HttpResponse(f"Configuration Error: HELIUS_API_KEY not set. Available env vars: {list(os.environ.keys())}", status=500)
+    
+    context = {
+        'HELIUS_API_KEY': helius_api_key
+    }
+    return render(request, 'index.html', context)
 def home(request):
     return render(request, 'home.html')
 def real_home(request):
@@ -70,13 +106,30 @@ def my_receive_main_view(request):
 def transak_claim_view(request):
     if not request.user.is_authenticated:
         return redirect('home')
+    
+    # Validate production keys before proceeding
+    try:
+        validate_production_keys()
+    except ValueError as e:
+        return HttpResponse(f"Configuration Error: {str(e)}", status=500)
+    
     tx_hash = request.GET.get('tx_hash')
     if not tx_hash:
-        return render(request, 'moonpay_claim.html', {'error': 'No transaction specified.', 'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')})
+        context = {
+            'error': 'No transaction specified.', 
+            'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', ''),
+            'MOONPAY_ENVIRONMENT': 'production'  # PRODUCTION ONLY
+        }
+        return render(request, 'moonpay_claim.html', context)
     try:
         transaction = Transaction.objects.get(tx_hash=tx_hash)
     except Transaction.DoesNotExist:
-        return render(request, 'moonpay_claim.html', {'error': 'Transaction not found.', 'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')})
+        context = {
+            'error': 'Transaction not found.', 
+            'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', ''),
+            'MOONPAY_ENVIRONMENT': 'production'  # PRODUCTION ONLY
+        }
+        return render(request, 'moonpay_claim.html', context)
     if transaction.to_receiver.email != request.user.email:
         return render_forbidden(request)
     if transaction.status == 'processing' and transaction.processing_started_at:
@@ -87,7 +140,12 @@ def transak_claim_view(request):
             transaction.save(update_fields=['status', 'processing_started_at'])
     if transaction.status == 'completed':
         return redirect(f'/deposit-success/?tx_hash={tx_hash}&already_completed=true')
-    return render(request, 'moonpay_claim.html', {'transaction': transaction, 'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')})
+    context = {
+        'transaction': transaction, 
+        'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', ''),
+        'MOONPAY_ENVIRONMENT': 'production'  # PRODUCTION ONLY
+    }
+    return render(request, 'moonpay_claim.html', context)
 def claim_success_view(request):
     return render(request, 'claim_success.html')
 def deposit_success_view(request):
@@ -155,7 +213,12 @@ def send_sol(request):
         recipient_address = data.get('recipient', '')
         tx_hash = data.get('tx_hash', '')
         lamports = int(amount * 1_000_000_000)
-        connection = Client("https://api.devnet.solana.com")
+        # PRODUCTION ONLY - Always use Solana Mainnet
+        helius_api_key = os.getenv('HELIUS_API_KEY', '')
+        if not helius_api_key:
+            raise ValueError("HELIUS_API_KEY environment variable is required for Solana mainnet access")
+        rpc_url = f"https://mainnet.helius-rpc.com/?api-key={helius_api_key}"
+        connection = Client(rpc_url)
         to_pubkey = PublicKey(recipient_address)
         txn = SolanaTransaction()
         txn.add(
@@ -318,7 +381,12 @@ def simulate_moonpay_deposit(request):
             transaction.save(update_fields=['status', 'processing_started_at'])
         sol_amount = float(transaction.amount)
         lamports = int(sol_amount * 1_000_000_000)
-        connection = Client("https://api.devnet.solana.com")
+        # PRODUCTION ONLY - Always use Solana Mainnet
+        helius_api_key = os.getenv('HELIUS_API_KEY', '')
+        if not helius_api_key:
+            raise ValueError("HELIUS_API_KEY environment variable is required for Solana mainnet access")
+        rpc_url = f"https://mainnet.helius-rpc.com/?api-key={helius_api_key}"
+        connection = Client(rpc_url)
         moonpay_pubkey = PublicKey(moonpay_wallet_address)
         txn = SolanaTransaction()
         txn.add(
@@ -360,7 +428,7 @@ def test_moonpay_notification(request):
         transaction_id = data.get('externalTransactionId')
         moonpay_wallet_address = data.get('moonpayWalletAddress')
         solana_tx_id = data.get('solanaTxId')
-        simulation_url = "https://api.moonpay.com/v3/simulate/sell_transaction"
+        simulation_url = f"{get_moonpay_api_url()}/v3/simulate/sell_transaction"
         secret_key = os.getenv("MOONPAY_SECRET_KEY", "")
         simulation_data = {
             "externalTransactionId": transaction_id,
@@ -445,7 +513,7 @@ def moonpay_receipt(request, external_id: str):
                 "Content-Type": "application/json"
             }
             try:
-                primary_url = f"https://api.moonpay.com/v3/sell_transactions/external_transaction_id/{external_id}"
+                primary_url = f"{get_moonpay_api_url()}/v3/sell_transactions/external_transaction_id/{external_id}"
                 resp = requests.get(primary_url, headers=headers, timeout=20)
                 if resp.status_code == 200:
                     data = resp.json() or {}
@@ -454,7 +522,7 @@ def moonpay_receipt(request, external_id: str):
                 pass
             if not mp_id:
                 try:
-                    fallback_url = "https://api.moonpay.com/v3/sell_transactions"
+                    fallback_url = f"{get_moonpay_api_url()}/v3/sell_transactions"
                     params = {"externalTransactionId": external_id}
                     resp2 = requests.get(fallback_url, headers=headers, params=params, timeout=20)
                     if resp2.status_code == 200:
@@ -469,7 +537,7 @@ def moonpay_receipt(request, external_id: str):
                     pass
             if not mp_id:
                 try:
-                    v1_url = "https://api.moonpay.com/v1/sell_transactions"
+                    v1_url = f"{get_moonpay_api_url()}/v1/sell_transactions"
                     params = {"externalTransactionId": external_id}
                     resp3 = requests.get(v1_url, headers=headers, params=params, timeout=20)
                     if resp3.status_code == 200:
