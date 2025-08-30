@@ -241,6 +241,14 @@ class SenderIdView(generics.RetrieveAPIView):
     lookup_field = 'user'
 @csrf_exempt
 def moonpay_webhook(request):
+    # Handle CORS preflight request
+    if request.method == 'OPTIONS':
+        response = JsonResponse({})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+    
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
@@ -271,8 +279,20 @@ def test_moonpay_webhook(request):
         return HttpResponse("Transaction not found", status=404)
 @csrf_exempt
 def simulate_moonpay_deposit(request):
+    # Handle CORS preflight request
+    if request.method == 'OPTIONS':
+        response = JsonResponse({})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-CSRFToken"
+        return response
+    
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    # Log request details for debugging
+    print(f"MoonPay deposit request from: {request.META.get('HTTP_ORIGIN', 'Unknown')}")
+    print(f"Request headers: {dict(request.headers)}")
     try:
         if not request.user.is_authenticated:
             return JsonResponse({"error": "Authentication required"}, status=401)

@@ -70,12 +70,59 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-CORS_ALLOW_ALL_ORIGINS = True
+# Import MoonPay CORS configuration
+try:
+    from moonpay_cors_config import MOONPAY_CORS_DOMAINS
+except ImportError:
+    MOONPAY_CORS_DOMAINS = [
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "https://sell-sandbox.moonpay.com",
+        "https://sell.moonpay.com",
+        "https://verify.walletconnect.org",
+        "https://api.moonpay.com",
+    ]
+
+# CORS Configuration for MoonPay integration
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = MOONPAY_CORS_DOMAINS
+
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow specific headers needed for MoonPay
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Allow specific methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 CSRF_TRUSTED_ORIGINS = [
-    "https://e5723bfe4258.ngrok-free.app"
+    "https://e5723bfe4258.ngrok-free.app",
+    "https://sell-sandbox.moonpay.com",
+    "https://sell.moonpay.com",
+    "https://verify.walletconnect.org",
+    "https://api.moonpay.com",
 ]
-X_FRAME_OPTIONS = 'DENY'
+
+# Frame options for MoonPay iframe embedding
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 AUTH_PASSWORD_VALIDATORS = [
     {
