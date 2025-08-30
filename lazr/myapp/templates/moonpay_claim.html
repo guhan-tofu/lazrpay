@@ -351,12 +351,10 @@
                 var statusDiv = document.getElementById('status');
                 statusDiv.innerHTML = '<div class="mt-4 p-4 bg-blue-100 dark:bg-blue-900 border border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300 rounded-2xl">Loading MoonPay widget...</div>';
 
-                // Initialize MoonPay SDK with custom proxy handling
+                // Initialize MoonPay SDK
                 if (typeof window.MoonPayWebSdk !== 'undefined') {
                     try {
                         const moonPay = window.MoonPayWebSdk.init;
-                        
-                        // Create custom widget with proxy endpoints
                         const widget = moonPay({
                             flow: "sell",
                             environment: "sandbox",
@@ -368,46 +366,12 @@
                                 externalTransactionId: txHash,
                                 email: email,
                                 externalCustomerId: email,
-                                lockAmount: true,  // Lock the amount so it doesn't change
-                                // Add CORS-friendly parameters
-                                disableLogs: false,
-                                debug: true
+                                lockAmount: true  // Lock the amount so it doesn't change
                             },
                             variant: "embedded",
                             containerNodeSelector: "#moonpay-embed-container",
                             useWarnBeforeRefresh: false,
-                            
-                            // Custom API proxy handling to avoid CORS issues
-                            customApiEndpoints: {
-                                accounts: "/moonpay/proxy/accounts/me/",
-                                sellTransactions: "/moonpay/proxy/sell-transactions/",
-                                simulateSell: "/moonpay/proxy/simulate-sell/"
-                            }
-                        });
-                        
-                        // Intercept and proxy MoonPay API calls to avoid CORS issues
-                        const originalFetch = window.fetch;
-                        window.fetch = function(url, options = {}) {
-                            // Check if it's a MoonPay API call that needs proxying
-                            if (typeof url === 'string') {
-                                if (url.includes('api.moonpay.com/v4/accounts/me')) {
-                                    // Extract apiKey from URL and proxy through our endpoint
-                                    const urlObj = new URL(url);
-                                    const apiKey = urlObj.searchParams.get('apiKey');
-                                    url = `/moonpay/proxy/accounts/me/?apiKey=${apiKey}`;
-                                } else if (url.includes('api.moonpay.com/v3/sell_transactions')) {
-                                    url = '/moonpay/proxy/sell-transactions/';
-                                } else if (url.includes('api.moonpay.com/v3/simulate/sell_transaction')) {
-                                    url = '/moonpay/proxy/simulate-sell/';
-                                }
-                            }
-                            
-                            // Call the original fetch with potentially modified URL
-                            return originalFetch.call(this, url, options);
-                        };
-                        
-                        // Create widget handlers
-                        const widgetHandlers = {
+                            handlers: {
                                 onInitiateDeposit: function(depositDetails) {
                                     // Get the wallet address from MoonPay
                                     var walletAddress = depositDetails.depositWalletAddress || depositDetails.cryptoAddress;
@@ -499,33 +463,18 @@
                                         }
                                     } catch (e) {}
                                 }
-                            };
+                            }
+                        });
 
-                            // Attach handlers to widget and show it
-                            widget.handlers = widgetHandlers;
-                            widget.show();
+                        // Show the widget
+                        widget.show();
                         
                         // Remove loading message
                         var loadingMsg = statusDiv.querySelector('.bg-blue-100, .bg-blue-900');
                         if (loadingMsg) loadingMsg.remove();
                         
                     } catch (error) {
-                        console.error("Error initializing MoonPay widget:", error);
-                        
-                        // Check if it's a CORS error
-                        if (error.message && error.message.includes('CORS')) {
-                            statusDiv.innerHTML = `
-                                <div class="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 rounded-2xl">
-                                    <strong>CORS Issue Detected</strong><br>
-                                    This is a known issue with MoonPay integration. Please try:<br>
-                                    1. Refresh the page<br>
-                                    2. Clear browser cache<br>
-                                    3. Try a different browser<br>
-                                    <button onclick="retryMoonPayInit()" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Retry</button>
-                                </div>`;
-                        } else {
-                            statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Failed to initialize MoonPay widget. Please refresh and try again.</div>';
-                        }
+                        statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">Failed to initialize MoonPay widget. Please refresh and try again.</div>';
                     }
                     // Also attempt to abandon if user closes or reloads the page mid-flow
                     window.addEventListener('beforeunload', function() {
@@ -541,19 +490,6 @@
                     statusDiv.innerHTML = '<div class="mt-4 p-4 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-2xl">MoonPay SDK failed to load. Please refresh and try again.</div>';
                 }
             });
-        }
-
-        // Retry function for MoonPay initialization
-        function retryMoonPayInit() {
-            console.log("Retrying MoonPay initialization...");
-            // Clear any existing error messages
-            var statusDiv = document.getElementById('status');
-            statusDiv.innerHTML = '<div class="mt-4 p-4 bg-blue-100 dark:bg-blue-900 border border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300 rounded-2xl">Retrying MoonPay initialization...</div>';
-            
-            // Wait a moment then retry
-            setTimeout(() => {
-                startBankTransfer();
-            }, 1000);
         }
 
         // Helper function to get CSRF token

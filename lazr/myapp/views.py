@@ -241,14 +241,6 @@ class SenderIdView(generics.RetrieveAPIView):
     lookup_field = 'user'
 @csrf_exempt
 def moonpay_webhook(request):
-    # Handle CORS preflight request
-    if request.method == 'OPTIONS':
-        response = JsonResponse({})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
-    
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
     try:
@@ -279,20 +271,8 @@ def test_moonpay_webhook(request):
         return HttpResponse("Transaction not found", status=404)
 @csrf_exempt
 def simulate_moonpay_deposit(request):
-    # Handle CORS preflight request
-    if request.method == 'OPTIONS':
-        response = JsonResponse({})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-CSRFToken"
-        return response
-    
     if request.method != 'POST':
         return JsonResponse({"error": "Method not allowed"}, status=405)
-    
-    # Log request details for debugging
-    print(f"MoonPay deposit request from: {request.META.get('HTTP_ORIGIN', 'Unknown')}")
-    print(f"Request headers: {dict(request.headers)}")
     try:
         if not request.user.is_authenticated:
             return JsonResponse({"error": "Authentication required"}, status=401)
@@ -509,129 +489,3 @@ def moonpay_receipt(request, external_id: str):
         return JsonResponse({"receipt_url": None})
     except Exception as e:
         return JsonResponse({"receipt_url": None, "error": str(e)}, status=200)
-
-@csrf_exempt
-def moonpay_proxy_accounts_me(request):
-    """Proxy for MoonPay /v4/accounts/me endpoint to avoid CORS issues"""
-    if request.method == 'OPTIONS':
-        response = JsonResponse({})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
-    
-    if request.method != 'GET':
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-    
-    try:
-        # Get API key from query params
-        api_key = request.GET.get('apiKey')
-        if not api_key:
-            return JsonResponse({"error": "Missing apiKey parameter"}, status=400)
-        
-        # Forward request to MoonPay
-        moonpay_url = f"https://api.moonpay.com/v4/accounts/me?apiKey={api_key}"
-        headers = {
-            'User-Agent': request.META.get('HTTP_USER_AGENT', ''),
-            'Accept': 'application/json',
-        }
-        
-        response = requests.get(moonpay_url, headers=headers, timeout=30)
-        
-        # Return MoonPay's response
-        return JsonResponse(
-            response.json() if response.status_code == 200 else {"error": "MoonPay API error"},
-            status=response.status_code
-        )
-        
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-@csrf_exempt
-def moonpay_proxy_sell_transactions(request):
-    """Proxy for MoonPay sell transactions endpoint"""
-    if request.method == 'OPTIONS':
-        response = JsonResponse({})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
-    
-    if request.method not in ['GET', 'POST']:
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-    
-    try:
-        # Get secret key from environment
-        secret_key = os.getenv("MOONPAY_SECRET_KEY", "")
-        if not secret_key:
-            return JsonResponse({"error": "MoonPay secret key not configured"}, status=500)
-        
-        # Determine endpoint based on request
-        if request.method == 'GET':
-            external_id = request.GET.get('externalTransactionId')
-            if external_id:
-                moonpay_url = f"https://api.moonpay.com/v3/sell_transactions/external_transaction_id/{external_id}"
-            else:
-                moonpay_url = "https://api.moonpay.com/v3/sell_transactions"
-            
-            headers = {
-                "Authorization": f"Bearer {secret_key}",
-                "Content-Type": "application/json"
-            }
-            
-            response = requests.get(moonpay_url, headers=headers, timeout=30)
-        else:  # POST
-            moonpay_url = "https://api.moonpay.com/v3/sell_transactions"
-            headers = {
-                "Authorization": f"Bearer {secret_key}",
-                "Content-Type": "application/json"
-            }
-            
-            # Forward the request body
-            response = requests.post(moonpay_url, json=request.data, headers=headers, timeout=30)
-        
-        # Return MoonPay's response
-        return JsonResponse(
-            response.json() if response.status_code == 200 else {"error": "MoonPay API error"},
-            status=response.status_code
-        )
-        
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-@csrf_exempt
-def moonpay_proxy_simulate_sell(request):
-    """Proxy for MoonPay simulate sell transaction endpoint"""
-    if request.method == 'OPTIONS':
-        response = JsonResponse({})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
-    
-    if request.method != 'POST':
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-    
-    try:
-        # Get secret key from environment
-        secret_key = os.getenv("MOONPAY_SECRET_KEY", "")
-        if not secret_key:
-            return JsonResponse({"error": "MoonPay secret key not configured"}, status=500)
-        
-        moonpay_url = "https://api.moonpay.com/v3/simulate/sell_transaction"
-        headers = {
-            "Authorization": f"Bearer {secret_key}",
-            "Content-Type": "application/json"
-        }
-        
-        # Forward the request body
-        response = requests.post(moonpay_url, json=request.data, headers=headers, timeout=30)
-        
-        # Return MoonPay's response
-        return JsonResponse(
-            response.json() if response.status_code == 200 else {"error": "MoonPay API error"},
-            status=response.status_code
-        )
-        
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
