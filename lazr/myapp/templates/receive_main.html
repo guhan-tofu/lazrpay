@@ -359,7 +359,7 @@
         // Function to load pending transactions
         async function loadPendingTransactions() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/transaction/by_email/${userEmail}/`);
+                const res = await fetch(`https://lazrpay.onrender.com/transaction/by_email/${userEmail}/`);
                 const transactions = await res.json();
                 const container = document.getElementById("transaction-list");
                 container.innerHTML = ""; // Clear loading text
@@ -424,7 +424,7 @@
         // Function to load full transaction history
         async function loadTransactionHistory() {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/transactions/history/${userEmail}/`);
+                const res = await fetch(`https://lazrpay.onrender.com/transactions/history/${userEmail}/`);
                 const history = await res.json();
                 const container = document.getElementById("transaction-history");
                 container.innerHTML = "";
