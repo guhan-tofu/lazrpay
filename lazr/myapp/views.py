@@ -180,6 +180,8 @@ class SenderListView(generics.ListAPIView):
     queryset = Sender.objects.all()
     serializer_class = SenderSerializer
     permission_classes = [AllowAny]
+
+
 class CreateRecipientView(generics.CreateAPIView):
     queryset = Recipient.objects.all()
     serializer_class = RecipientSerializer
@@ -188,6 +190,8 @@ class RecipientListView(generics.ListAPIView):
     queryset = Recipient.objects.all()
     serializer_class = RecipientSerializer
     permission_classes = [AllowAny]
+
+@method_decorator(csrf_exempt, name='dispatch')    
 class CreateTransactionView(generics.CreateAPIView):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
@@ -229,6 +233,7 @@ class UpdateTransactionStatusView(generics.UpdateAPIView):
     serializer_class = TransactionSerializer
     permission_classes = [AllowAny]
     lookup_field = 'tx_hash'
+@method_decorator(csrf_exempt, name='dispatch')
 class UpdateWalletAddressView(generics.UpdateAPIView):
     queryset = Sender.objects.all()
     serializer_class = SenderSerializer
