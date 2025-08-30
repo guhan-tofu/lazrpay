@@ -28,11 +28,43 @@ from solana.transaction import Transaction as SolanaTransaction
 from solana.system_program import transfer, TransferParams
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
+from django.http import JsonResponse
+from django.conf import settings
+from rest_framework.decorators import api_view
 load_dotenv()
 # this sets up the solana keypair
 PRIVATE_KEY_BASE58 = os.getenv("PRIVATE_KEY_BASE58")
 private_key_bytes = base58.b58decode(PRIVATE_KEY_BASE58)
 keypair = Keypair.from_secret_key(private_key_bytes)
+
+
+@api_view(['GET'])
+def moonpay_proxy(request):
+    # Get the MoonPay API key from .env
+    api_key = os.getenv('MOONPAY_API_KEY')
+    if not api_key:
+        return JsonResponse({'error': 'MoonPay API key not configured'}, status=500)
+
+    # Extract the MoonPay API path from the request
+    api_path = request.GET.get('path', '')
+    if not api_path:
+        return JsonResponse({'error': 'Missing API path'}, status=400)
+
+    # Validate allowed paths to prevent abuse
+    allowed_paths = ['v3/ip_address', 'v4/accounts/me']
+    if api_path not in allowed_paths:
+        return JsonResponse({'error': 'Invalid API path'}, status=400)
+
+    # Construct the MoonPay API URL
+    moonpay_url = f'https://api.moonpay.com/{api_path}?apiKey={api_key}'
+
+    try:
+        # Forward the request to MoonPay
+        response = requests.get(moonpay_url)
+        return JsonResponse(response.json(), status=response.status_code)
+    except requests.RequestException as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 def render_forbidden(request, message="Access forbidden"):
     response = render(request, 'forbidden.html')
     response.status_code = 403
@@ -87,7 +119,10 @@ def transak_claim_view(request):
             transaction.save(update_fields=['status', 'processing_started_at'])
     if transaction.status == 'completed':
         return redirect(f'/deposit-success/?tx_hash={tx_hash}&already_completed=true')
-    return render(request, 'moonpay_claim.html', {'transaction': transaction, 'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')})
+    return render(request, 'moonpay_claim.html', {
+        'transaction': transaction,
+        'MOONPAY_API_KEY': os.getenv('MOONPAY_API_KEY', '')
+    })
 def claim_success_view(request):
     return render(request, 'claim_success.html')
 def deposit_success_view(request):

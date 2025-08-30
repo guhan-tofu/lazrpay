@@ -359,7 +359,7 @@
                             flow: "sell",
                             environment: "sandbox",
                             params: {
-                                apiKey: "pk_test_DjAai22vaOAHWsftWvsyvjD6JUymlz",
+                                apiKey: "{{ MOONPAY_API_KEY|default:'' }}",
                                 baseCurrencyCode: "sol",
                                 baseCurrencyAmount: amount,
                                 defaultCurrencyCode: "usd",

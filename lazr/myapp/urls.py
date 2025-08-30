@@ -35,4 +35,5 @@ urlpatterns = [
     path("moonpay/simulate-deposit/", views.simulate_moonpay_deposit, name="simulate_moonpay_deposit"),
     path("moonpay/test-notification/", views.test_moonpay_notification, name="test_moonpay_notification"),
     path("moonpay/abandon/", views.abandon_processing, name="abandon_processing"),
+    path('moonpay-proxy/', views.moonpay_proxy, name='moonpay-proxy'),
 ]
