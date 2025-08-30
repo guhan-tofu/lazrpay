@@ -35,4 +35,9 @@ urlpatterns = [
     path("moonpay/simulate-deposit/", views.simulate_moonpay_deposit, name="simulate_moonpay_deposit"),
     path("moonpay/test-notification/", views.test_moonpay_notification, name="test_moonpay_notification"),
     path("moonpay/abandon/", views.abandon_processing, name="abandon_processing"),
+    
+    # MoonPay API Proxy endpoints to avoid CORS issues
+    path("moonpay/proxy/accounts/me/", views.moonpay_proxy_accounts_me, name="moonpay_proxy_accounts_me"),
+    path("moonpay/proxy/sell-transactions/", views.moonpay_proxy_sell_transactions, name="moonpay_proxy_sell_transactions"),
+    path("moonpay/proxy/simulate-sell/", views.moonpay_proxy_simulate_sell, name="moonpay_proxy_simulate_sell"),
 ]

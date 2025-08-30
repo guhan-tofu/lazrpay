@@ -351,10 +351,12 @@
                 var statusDiv = document.getElementById('status');
                 statusDiv.innerHTML = '<div class="mt-4 p-4 bg-blue-100 dark:bg-blue-900 border border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300 rounded-2xl">Loading MoonPay widget...</div>';
 
-                // Initialize MoonPay SDK
+                // Initialize MoonPay SDK with custom proxy handling
                 if (typeof window.MoonPayWebSdk !== 'undefined') {
                     try {
                         const moonPay = window.MoonPayWebSdk.init;
+                        
+                        // Create custom widget with proxy endpoints
                         const widget = moonPay({
                             flow: "sell",
                             environment: "sandbox",
@@ -374,7 +376,38 @@
                             variant: "embedded",
                             containerNodeSelector: "#moonpay-embed-container",
                             useWarnBeforeRefresh: false,
-                            handlers: {
+                            
+                            // Custom API proxy handling to avoid CORS issues
+                            customApiEndpoints: {
+                                accounts: "/moonpay/proxy/accounts/me/",
+                                sellTransactions: "/moonpay/proxy/sell-transactions/",
+                                simulateSell: "/moonpay/proxy/simulate-sell/"
+                            }
+                        });
+                        
+                        // Intercept and proxy MoonPay API calls to avoid CORS issues
+                        const originalFetch = window.fetch;
+                        window.fetch = function(url, options = {}) {
+                            // Check if it's a MoonPay API call that needs proxying
+                            if (typeof url === 'string') {
+                                if (url.includes('api.moonpay.com/v4/accounts/me')) {
+                                    // Extract apiKey from URL and proxy through our endpoint
+                                    const urlObj = new URL(url);
+                                    const apiKey = urlObj.searchParams.get('apiKey');
+                                    url = `/moonpay/proxy/accounts/me/?apiKey=${apiKey}`;
+                                } else if (url.includes('api.moonpay.com/v3/sell_transactions')) {
+                                    url = '/moonpay/proxy/sell-transactions/';
+                                } else if (url.includes('api.moonpay.com/v3/simulate/sell_transaction')) {
+                                    url = '/moonpay/proxy/simulate-sell/';
+                                }
+                            }
+                            
+                            // Call the original fetch with potentially modified URL
+                            return originalFetch.call(this, url, options);
+                        };
+                        
+                        // Create widget handlers
+                        const widgetHandlers = {
                                 onInitiateDeposit: function(depositDetails) {
                                     // Get the wallet address from MoonPay
                                     var walletAddress = depositDetails.depositWalletAddress || depositDetails.cryptoAddress;
@@ -466,11 +499,11 @@
                                         }
                                     } catch (e) {}
                                 }
-                            }
-                        });
+                            };
 
-                        // Show the widget
-                        widget.show();
+                            // Attach handlers to widget and show it
+                            widget.handlers = widgetHandlers;
+                            widget.show();
                         
                         // Remove loading message
                         var loadingMsg = statusDiv.querySelector('.bg-blue-100, .bg-blue-900');
