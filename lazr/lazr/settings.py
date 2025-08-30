@@ -73,7 +73,8 @@ DATABASES = {
 CORS_ALLOW_ALL_ORIGINS = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 CSRF_TRUSTED_ORIGINS = [
-    "https://e5723bfe4258.ngrok-free.app"
+    "https://e5723bfe4258.ngrok-free.app",
+    "https://lazrpay.onrender.com"
 ]
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
