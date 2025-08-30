@@ -182,6 +182,9 @@ class SenderListView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
 
+from django.utils.decorators import method_decorator
+
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateRecipientView(generics.CreateAPIView):
     queryset = Recipient.objects.all()
     serializer_class = RecipientSerializer
